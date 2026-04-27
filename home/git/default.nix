@@ -4,7 +4,7 @@
     settings = {
       user = {
         name = "Aaron Housh";
-        email = "dispersias@gmail.com"
+        email = "dispersias@gmail.com";
       };
       push = {
         autoSetupRemote = true;
