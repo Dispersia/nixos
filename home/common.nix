@@ -1,27 +1,27 @@
 { pkgs, config, ... }: {
-  home.packages = [
-    pkgs.vim
-    pkgs.git
+  home.packages = with pkgs; [
+    vim
+    git
 
-    pkgs.neofetch
-    pkgs.nnn
+    neofetch
+    nnn
 
-    pkgs.zip
-    pkgs.xz
-    pkgs.unzip
+    zip
+    xz
+    unzip
 
-    pkgs.ripgrep
-    pkgs.jq
-    pkgs.fzf
-    pkgs.eza
+    ripgrep
+    jq
+    fzf
+    eza
 
-    pkgs.file
-    pkgs.which
-    pkgs.tree
-    pkgs.zstd
+    file
+    which
+    tree
+    zstd
 
-    pkgs.btop
+    btop
 
-    pkgs.lsof
+    lsof
   ];
 }

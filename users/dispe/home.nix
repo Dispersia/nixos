@@ -5,6 +5,7 @@
 
     ../../home/alacritty
     ../../home/fcitx5
+    ../../home/git
     ../../home/hyprland
     ../../home/neovim
     ../../home/waybar
@@ -23,13 +24,7 @@
 
   programs.bash.enable = true;
 
-  programs.git = {
-    enable = true;
-    settings = {
-      user.name = "Aaron Housh";
-      user.email = "dispersias@gmail.com";
-    };
-  };
+  
 
   programs.brave = {
     enable = true;
