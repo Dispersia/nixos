@@ -11,6 +11,7 @@
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelParams = [ "nvidia-drm.modeset=1" ];
 
   networking.hostName = "${username}";
   networking.networkmanager.enable = true;

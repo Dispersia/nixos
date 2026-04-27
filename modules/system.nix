@@ -5,6 +5,16 @@
     extraGroups = [ "wheel" "networkmanager" "video" ];
   };
 
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
+
+  environment.sessionVariables = {
+    GBM_BACKEND="nvidia-drm";
+    __GLX_VENDOR_LIBRARY_NAME="nvidia";
+  };
+
   nix.settings.trusted-users = [username];
 
   nix.settings = {
