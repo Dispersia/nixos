@@ -1,0 +1,5 @@
+[general]
+import = [
+  "~/.config/alacritty/themes/themes/alabaster_dark.toml"
+]
+
