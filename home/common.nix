@@ -1,4 +1,5 @@
-{ pkgs, config, ... }: {
+{ pkgs, config, ... }:
+{
   home.packages = with pkgs; [
     vim
     git
@@ -28,7 +29,7 @@
   ];
 
   programs.bash.enable = true;
- 
+
   programs.gpg = {
     enable = true;
 

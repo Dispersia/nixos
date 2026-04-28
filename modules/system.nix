@@ -1,8 +1,18 @@
-{ pkgs, lib, username, ... }: {
+{
+  pkgs,
+  lib,
+  username,
+  ...
+}:
+{
   users.users.${username} = {
     isNormalUser = true;
     description = username;
-    extraGroups = [ "wheel" "networkmanager" "video" ];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+      "video"
+    ];
     shell = pkgs.nushell;
   };
 
@@ -12,14 +22,17 @@
   };
 
   environment.sessionVariables = {
-    GBM_BACKEND="nvidia-drm";
-    __GLX_VENDOR_LIBRARY_NAME="nvidia";
+    GBM_BACKEND = "nvidia-drm";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
   };
 
-  nix.settings.trusted-users = [username];
+  nix.settings.trusted-users = [ username ];
 
   nix.settings = {
-    experimental-features = [ "nix-command" "flakes" ];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
 
     substituters = [
       "https://cache.nixos.org"
@@ -52,9 +65,18 @@
     ];
 
     fontconfig.defaultFonts = {
-      serif = [ "Noto Serif" "Noto Color Emoji" ];
-      sansSerif = [ "Noto Sans" "Noto Color Emoji" ];
-      monospace = [ "JetBrainsMono Nerd Font" "Noto Color Emoji" ];
+      serif = [
+        "Noto Serif"
+        "Noto Color Emoji"
+      ];
+      sansSerif = [
+        "Noto Sans"
+        "Noto Color Emoji"
+      ];
+      monospace = [
+        "JetBrainsMono Nerd Font"
+        "Noto Color Emoji"
+      ];
       emoji = [ "Noto Color Emoji" ];
     };
   };

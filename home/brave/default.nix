@@ -1,4 +1,5 @@
-{ pkgs, config, ... }: {
+{ pkgs, config, ... }:
+{
   programs.brave = {
     enable = true;
     package = pkgs.brave;
