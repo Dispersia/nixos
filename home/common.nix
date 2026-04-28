@@ -23,5 +23,23 @@
     btop
 
     lsof
+
+    tree-sitter
   ];
+
+  programs.bash.enable = true;
+ 
+  programs.gpg = {
+    enable = true;
+
+    mutableKeys = true;
+    mutableTrust = true;
+  };
+
+  services.gpg-agent = {
+    enable = true;
+
+    defaultCacheTtl = 3600;
+    pinentry.package = pkgs.pinentry-qt;
+  };
 }
