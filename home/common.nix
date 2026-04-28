@@ -1,5 +1,22 @@
 { pkgs, config, ... }:
 {
+  imports = [
+    ./alacritty
+    ./brave
+    ./carapace
+    ./fcitx5
+    ./git
+    ./kde
+    ./hyprland
+    ./neovim
+    ./nushell
+    ./starship
+    ./vscode
+    ./waybar
+    ./yazi
+    ./zellij
+  ];
+
   home.packages = with pkgs; [
     vim
     git

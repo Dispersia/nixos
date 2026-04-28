@@ -32,9 +32,9 @@
       )
     '';
     shellAliases = {
-      vi = "hx";
-      vim = "hx";
-      nano = "hx";
+      vi = "nvim";
+      vim = "nvim";
+      nano = "nvim";
     };
   };
 }
