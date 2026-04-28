@@ -26,6 +26,8 @@
     lsof
 
     tree-sitter
+
+    wl-clipboard
   ];
 
   programs.bash.enable = true;
