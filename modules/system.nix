@@ -3,6 +3,7 @@
     isNormalUser = true;
     description = username;
     extraGroups = [ "wheel" "networkmanager" "video" ];
+    shell = pkgs.nushell;
   };
 
   hardware.graphics = {

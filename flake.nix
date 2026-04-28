@@ -20,6 +20,8 @@
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }: 
   let
+    system = "x64_64-linux";
+    pkgs = nixpkgs.legacyPackages.${system};
     mkHost = hostName: username: nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       specialArgs = { inherit inputs hostName username; };
@@ -37,9 +39,11 @@
       ];
     };
   in {
+    formatter.${system} = pkgs.nixpkgs-fmt;
     nixosConfigurations = {
       laptop = mkHost "laptop" "dispe";
       desktop = mkHost "desktop" "dispe";
+      work-desktop = mkHost "work-desktop" "dispe";
     };
   };
 }
