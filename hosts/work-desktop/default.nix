@@ -8,6 +8,7 @@
   imports = [
     ../../modules/system.nix
 
+    ../../home/google-cloud-sdk 
     ./hardware-configuration.nix
   ];
 
@@ -21,6 +22,11 @@
 
   networking.hostName = "${username}";
   networking.networkmanager.enable = true;
+
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+  };
 
   system.stateVersion = "25.11";
 }
