@@ -8,7 +8,6 @@
   imports = [
     ../../modules/system.nix
 
-    ../../home/google-cloud-sdk 
     ./hardware-configuration.nix
   ];
 
