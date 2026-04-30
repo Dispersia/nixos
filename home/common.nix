@@ -4,14 +4,15 @@
     ./alacritty
     ./brave
     ./carapace
-    ./claude
+    #./claude
     ./fcitx5
     ./git
     ./kde
+    ./kicad
     ./hyprland
     ./neovim
     ./nushell
-    ./postman
+    #./postman
     ./starship
     ./vscode
     ./waybar
