@@ -2,6 +2,7 @@
   inputs,
   pkgs,
   config,
+  username,
   ...
 }:
 {
@@ -16,6 +17,7 @@
       theme = "breeze-dark";
       colorScheme = "BreezeDark";
     };
+    configFile.kwinrc.Wayland.InputMethod.value = "/etc/profiles/per-user/${username}/share/applications/org.fcitx.Fcitx5.desktop";
   };
 
   gtk = {
