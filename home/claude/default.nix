@@ -1,6 +1,6 @@
 { pkgs, config, ... }:
 {
-  home.packages = [ 
+  home.packages = [
     pkgs.google-cloud-sdk
     pkgs.claude-code
   ];

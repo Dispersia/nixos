@@ -1,8 +1,3 @@
-include "dms/colors.kdl"
-include "dms/layout.kdl"
-inlucde "dms/alttab.kdl"
-include "dms/binds.kdl"
-
 layout {
   gaps 1
   background-color "transparent"

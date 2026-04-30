@@ -1,17 +1,11 @@
 {
-  inputs,
   pkgs,
   config,
   ...
 }:
-let
-  unstable = import inputs.nixpkgs-unstable {
-    system = pkgs.stdenv.hostPlatform.system;
-  };
-in
 {
-  home.packages = [
-    unstable.neovim
+  home.packages = with pkgs; [
+    neovim
   ];
 
   home.file.".config/nvim" = {
