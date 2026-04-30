@@ -16,7 +16,7 @@
     ./postman
     ./starship
     ./vscode
-    ./waybar
+    #./waybar
     ./yazi
     ./zellij
   ];

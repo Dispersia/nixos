@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ inputs, pkgs, config, ... }:
 {
   home.packages = with pkgs; [ niri ];
 
@@ -6,4 +6,6 @@
     source = ./config;
     recursive = true;
   };
+
+  imports = [ inputs.dms.homeModules.dank-material-shell ];
 }
