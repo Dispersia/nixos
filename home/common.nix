@@ -25,7 +25,6 @@
     vim
     git
 
-    neofetch
     nnn
 
     zip

@@ -15,7 +15,7 @@
     swayidle
   ];
 
-  programs.dms-shell = {
+  programs.dank-material-shell = {
     enable = true;
 
     systemd = {
