@@ -53,6 +53,9 @@ binds {
     Mod+Shift+L { move-column-right; }
     Mod+Shift+K { move-window-up; }
     Mod+Shift+J { move-window-down; }
+
+    Mod+Ctrl+H { move-column-left-or-to-monitor-left; }
+    Mod+Ctrl+L { move-column-right-or-to-monitor-right; }
 }
 
 

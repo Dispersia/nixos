@@ -15,3 +15,17 @@ environment {
   QT_QPA_PLATFORMTHEME_QT6 "gtk3"
 }
 
+output "DP-3" {
+  position x=0 y=0
+  scale 1.0
+}
+
+output "HDMI-A-1" {
+  position x=1920 y=0
+  scale 1.0
+}
+
+output "HDMI-A-2" {
+  position x=3840 y=0
+  scale 1.0
+}
