@@ -56,6 +56,9 @@ binds {
 
     Mod+Ctrl+H { move-column-left-or-to-monitor-left; }
     Mod+Ctrl+L { move-column-right-or-to-monitor-right; }
+
+    // Commands
+    Mod+P { maximize-window-to-edges; }
 }
 
 
