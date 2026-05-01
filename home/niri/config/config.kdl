@@ -1,6 +1,6 @@
 include "dms/colors.kdl"
 include "dms/layout.kdl"
-inlucde "dms/alttab.kdl"
+include "dms/alttab.kdl"
 include "dms/binds.kdl"
 
 layout {
