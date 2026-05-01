@@ -4,7 +4,13 @@ include "dms/alttab.kdl"
 include "dms/binds.kdl"
 
 layout {
-  gaps 1
+  border {
+    off
+  }
+  focus-ring {
+    off
+  }
+  gaps 0
   background-color "transparent"
 }
 
@@ -74,7 +80,7 @@ binds {
 window-rule {
     match app-id=r#"^org\.gnome\."#
     draw-border-with-background false
-    geometry-corner-radius 12
+    geometry-corner-radius 0
     clip-to-geometry true
 }
 
@@ -84,20 +90,21 @@ window-rule {
     match app-id="zen"
     match app-id="com.mitchellh.ghostty"
     match app-id="kitty"
+    geometry-corner-radius 0
+    clip-to-geometry true
     draw-border-with-background false
 }
 
 window-rule {
     match is-active=false
-    opacity 0.9
+    opacity 0.8
 }
 
 window-rule {
-    geometry-corner-radius 12
+    geometry-corner-radius 0
     clip-to-geometry true
 }
 
-// Open DMS windows as floating by default
 window-rule {
     match app-id=r#"org.quickshell$"#
     open-floating true

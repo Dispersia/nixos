@@ -17,10 +17,7 @@
 
   programs.dank-material-shell = {
     enable = true;
-
-    systemd = {
-      enable = false;
-    };
+    enableSystemMonitoring = true;
   };
 
   home.file.".config/niri" = {

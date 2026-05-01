@@ -9,5 +9,5 @@
     nix-switch = "sudo nixos-rebuild switch --flake ~/.config/nixos";
   };
 
-  home.stateVersion = "25.11";
+  home.stateVersion = "26.05";
 }
