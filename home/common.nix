@@ -2,6 +2,7 @@
 {
   imports = [
     ./alacritty
+    ./android
     ./brave
     ./carapace
     ./claude
@@ -16,7 +17,6 @@
     ./postman
     ./starship
     ./vscode
-    #./waybar
     ./yazi
     ./zellij
   ];
@@ -44,8 +44,6 @@
     btop
 
     lsof
-
-    tree-sitter
 
     wl-clipboard
   ];

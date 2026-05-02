@@ -12,6 +12,8 @@
       "wheel"
       "networkmanager"
       "video"
+      "kvm"
+      "adbusers"
     ];
     shell = pkgs.nushell;
   };

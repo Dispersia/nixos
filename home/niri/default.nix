@@ -13,6 +13,7 @@
     swaylock
     mako
     swayidle
+    xwayland
   ];
 
   programs.dank-material-shell = {
