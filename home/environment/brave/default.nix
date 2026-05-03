@@ -1,6 +1,6 @@
 { pkgs, config, ... }:
 {
-  programs.brave = {
+  programs.chromium = {
     enable = true;
     package = pkgs.brave;
     extensions = [
@@ -10,6 +10,7 @@
     ];
     commandLineArgs = [
       "--password-store=basic"
+      "--disable-features=WebRtcAllowInputVolumeAdjustment"
     ];
   };
 }

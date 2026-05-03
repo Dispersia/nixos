@@ -1,24 +1,9 @@
 { pkgs, config, ... }:
 {
   imports = [
-    ./alacritty
-    ./android
-    ./brave
-    ./carapace
-    ./claude
-    ./fcitx5
-    ./git
-    ./kde
-    ./kicad
-    ./hyprland
-    ./neovim
-    ./niri
-    ./nushell
-    ./postman
-    ./starship
-    ./vscode
-    ./yazi
-    ./zellij
+    ./development
+    ./environment
+    ./shell
   ];
 
   home.packages = with pkgs; [

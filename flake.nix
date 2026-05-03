@@ -45,11 +45,14 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs hostName username; };
           modules = [
-            ({ pkgs, ... }: {
-              nixpkgs.overlays = [
-                android-nixpkgs.overlays.default
-              ];
-            })
+            (
+              { pkgs, ... }:
+              {
+                nixpkgs.overlays = [
+                  android-nixpkgs.overlays.default
+                ];
+              }
+            )
 
             ./hosts/${hostName}
 
@@ -58,30 +61,46 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
 
-              home-manager.users.${username} = { config, lib, pkgs, ... }:
-              {
-                imports = [
-                  ./users/${username}/home.nix
+              home-manager.users.${username} =
+                {
+                  config,
+                  lib,
+                  pkgs,
+                  ...
+                }:
+                {
+                  imports = [
+                    ./users/${username}/home.nix
 
-                  {
-                    config = {
-                      android-sdk = {
-                        enable = true;
-                        path = "${config.home.homeDirectory}/.android/sdk";
-                        packages = sdk: with sdk; [
-                          build-tools-34-0-0
-                          cmdline-tools-latest
-                          emulator
-                          platforms-android-34
-                          sources-android-34
-                        ];
+                    {
+                      config = {
+                        android-sdk = {
+                          enable = true;
+                          path = "${config.home.homeDirectory}/.android/sdk";
+                          packages =
+                            sdk: with sdk; [
+                              build-tools-34-0-0
+                              cmdline-tools-latest
+                              emulator
+                              platforms-android-34
+                              sources-android-34
+                            ];
+                        };
                       };
-                    };
-                    imports = [ android-nixpkgs.hmModule ];
-                  }
-                ];
-              };
+                      imports = [ android-nixpkgs.hmModule ];
+                    }
+                  ];
+                };
               home-manager.extraSpecialArgs = { inherit inputs hostName username; };
+            }
+            {
+              environment.etc."brave/policies/managed/brave-default-search.json".text = ''
+                {
+                  "DefaultSearchProviderEnabled": true,
+                  "DefaultSearchProviderName": "Google",
+                  "DefaultSearchProviderSearchURL": "https://www.google.com/search?q={searchTerms}"
+                }
+              '';
             }
           ];
         };
