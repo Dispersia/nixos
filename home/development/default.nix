@@ -9,4 +9,8 @@
     ./postman
     ./vscode
   ];
+
+  home.packages = [
+    (pkgs.callPackage ./kotlin-lsp.nix { })
+  ];
 }
