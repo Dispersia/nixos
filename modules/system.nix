@@ -4,7 +4,11 @@
   username,
   ...
 }:
-{
+{ 
+  virtualisation.libvirtd.enable = true;
+
+  programs.virt-manager.enable = true;
+
   users.users.${username} = {
     isNormalUser = true;
     description = username;
@@ -13,6 +17,7 @@
       "networkmanager"
       "video"
       "kvm"
+      "libvirtd"
       "adbusers"
     ];
     shell = pkgs.nushell;
