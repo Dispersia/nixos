@@ -2,5 +2,5 @@
 return {
 	cmd = { "kotlin-lsp", "--stdio" },
 	filetypes = { "kotlin" },
-	root_markers = { "gradle.properties", "build.gradle.kts", ".git" },
+	root_markers = { "gradle.properties", "build.gradle.kts", "build.gradle", "pom.xml", ".git" },
 }
