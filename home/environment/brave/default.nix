@@ -7,6 +7,7 @@
       { id = "eimadpbcbfnmbkopoojfekhnkhdbieeh"; } # dark-reader
       { id = "nngceckbapebfimnlniiiahkandclblb"; } # bitwarden
       { id = "pnmaklegiibbioifkmfkgpfnmdehdfan"; } # 10ten
+      { id = "dhdgffkkebhmkfjojejmpbldmpobfkfo"; } # Tampermonkey
     ];
     commandLineArgs = [
       "--password-store=basic"
