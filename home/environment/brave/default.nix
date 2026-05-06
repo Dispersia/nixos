@@ -8,6 +8,7 @@
       { id = "nngceckbapebfimnlniiiahkandclblb"; } # bitwarden
       { id = "pnmaklegiibbioifkmfkgpfnmdehdfan"; } # 10ten
       { id = "dhdgffkkebhmkfjojejmpbldmpobfkfo"; } # Tampermonkey
+      { id = "gebbhagfogifgggkldgodflihgfeippi"; } # Return Youtube Dislike
     ];
     commandLineArgs = [
       "--password-store=basic"
