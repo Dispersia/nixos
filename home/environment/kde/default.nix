@@ -19,6 +19,9 @@
     };
     configFile.kwinrc.Wayland.InputMethod.value =
       "/etc/profiles/per-user/${username}/share/applications/org.fcitx.Fcitx5.desktop";
+    configFile.kded5rc = {
+      "Module-gtkconfig"."autoload" = false;
+    };
   };
 
   gtk = {
