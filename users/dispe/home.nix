@@ -2,7 +2,7 @@
 {
   imports = [
     ../../home/core.nix
-    ../../home/common.nix
+    ../../home/hosts/${hostName}.nix
   ];
 
   home.shellAliases = {

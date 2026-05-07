@@ -1,7 +1,7 @@
 {
   config,
   pkgs,
-  username,
+  hostName,
   ...
 }:
 {
@@ -27,7 +27,7 @@
 
   services.xserver.videoDrivers = [ "nvidia" ];
 
-  networking.hostName = "${username}";
+  networking.hostName = hostName;
   networking.networkmanager.enable = true;
 
   system.stateVersion = "26.05";
