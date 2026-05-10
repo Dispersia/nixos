@@ -1,16 +1,16 @@
 { pkgs, config, ... }:
 {
   imports = [
-    ./android
+    #./android
     ./claude
     ./git
-    ./kicad
+    #./kicad
     ./neovim
-    ./postman
-    ./vscode
+    #./postman
+    #./vscode
   ];
 
   home.packages = [
-    (pkgs.callPackage ./kotlin-lsp.nix { })
+    #(pkgs.callPackage ./kotlin-lsp.nix { })
   ];
 }

@@ -3,9 +3,9 @@
   imports = [
     ./alacritty
     ./brave
-    ./fcitx5
-    ./kde
-    ./niri
+    #./fcitx5
+    #./kde
+    #./niri
     ./yazi
     ./zellij
   ];

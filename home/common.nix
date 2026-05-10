@@ -7,7 +7,7 @@
   ];
 
   home.packages = with pkgs; [
-    vim
+    /*vim
     git
 
     nnn
@@ -30,10 +30,10 @@
 
     lsof
 
-    wl-clipboard
+    wl-clipboard*/
   ];
 
-  programs.bash.enable = true;
+  /*programs.bash.enable = true;
 
   programs.gpg = {
     enable = true;
@@ -47,5 +47,5 @@
 
     defaultCacheTtl = 3600;
     pinentry.package = pkgs.pinentry-qt;
-  };
+  };*/
 }
