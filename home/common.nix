@@ -7,7 +7,7 @@
   ];
 
   home.packages = with pkgs; [
-    /*vim
+    vim
     git
 
     nnn
@@ -29,11 +29,9 @@
     btop
 
     lsof
-
-    wl-clipboard*/
   ];
 
-  /*programs.bash.enable = true;
+  programs.bash.enable = true;
 
   programs.gpg = {
     enable = true;
@@ -41,11 +39,4 @@
     mutableKeys = true;
     mutableTrust = true;
   };
-
-  services.gpg-agent = {
-    enable = true;
-
-    defaultCacheTtl = 3600;
-    pinentry.package = pkgs.pinentry-qt;
-  };*/
 }
