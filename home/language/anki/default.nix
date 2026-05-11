@@ -88,6 +88,7 @@ in
     enable = true;
     addons = [
       pkgs.ankiAddons.anki-connect
+      pkgs.ankiAddons.passfail2
 
       (onigiri.withConfig {
         userFiles = onigiriUserFiles;
