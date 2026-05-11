@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  hostName,
   username,
   ...
 }:
@@ -104,4 +105,6 @@
   };
 
   time.timeZone = "America/Phoenix";
+
+  #system.rebuild.flake = "/home/${username}/.config/nixos#${hostName}";
 }
