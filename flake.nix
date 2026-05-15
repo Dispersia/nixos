@@ -116,7 +116,7 @@
       };
 
       darwinConfigurations = {
-        work-laptop = mkDarwinHost "ML-DWR5XQ9FLW" "AHoush";
+        ML-DWR5XQ9FLW = mkDarwinHost "ML-DWR5XQ9FLW" "AHoush";
       };
     };
 }

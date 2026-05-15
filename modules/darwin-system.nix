@@ -25,10 +25,11 @@
 
   nixpkgs.config.allowUnfree = true;
 
+  users.knownUsers = [ "AHoush" ];
   users.users.${username} = {
+    uid = 504;
     shell = pkgs.nushell;
   };
-
 
   fonts = {
     packages = with pkgs; [

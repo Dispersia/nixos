@@ -86,6 +86,7 @@ in
 {
   programs.anki = {
     enable = true;
+    package = if pkgs.stdenv.isDarwin then pkgs.anki-bin else pkgs.anki;
     addons = [
       pkgs.ankiAddons.anki-connect
       pkgs.ankiAddons.passfail2
