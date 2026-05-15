@@ -12,6 +12,7 @@
 
   home.packages = with pkgs; [
     wl-clipboard
+    postgresql
   ];
 
   services.gpg-agent = {
