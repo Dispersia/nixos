@@ -1,9 +1,8 @@
-{ pkgs, config, ... }:
+{ pkgs, config, inputs, ... }:
 {
   imports = [
     ./development
     ./environment
-    #./language
     ./shell
   ];
 
@@ -30,6 +29,8 @@
     btop
 
     lsof
+
+    inputs.b123d-server.packages.${pkgs.system}.default
   ];
 
   programs.bash.enable = true;

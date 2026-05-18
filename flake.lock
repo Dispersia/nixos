@@ -1,5 +1,26 @@
 {
   "nodes": {
+    "b123d-server": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1779111674,
+        "narHash": "sha256-WOZVvMyb1HyxaUqFUtIV7oCKuTchJwB4sksCiu7OUHY=",
+        "owner": "Dispersia",
+        "repo": "build123d_server",
+        "rev": "6f1cf0dfb735d5730dcd51d7c501f6bd99f1faf8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Dispersia",
+        "repo": "build123d_server",
+        "type": "github"
+      }
+    },
     "dms": {
       "inputs": {
         "nixpkgs": [
@@ -19,6 +40,24 @@
         "owner": "AvengeMedia",
         "ref": "stable",
         "repo": "DankMaterialShell",
+        "type": "github"
+      }
+    },
+    "flake-utils": {
+      "inputs": {
+        "systems": "systems"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
         "type": "github"
       }
     },
@@ -126,11 +165,27 @@
     },
     "root": {
       "inputs": {
+        "b123d-server": "b123d-server",
         "dms": "dms",
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs",
         "plasma-manager": "plasma-manager"
+      }
+    },
+    "systems": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
       }
     }
   },
