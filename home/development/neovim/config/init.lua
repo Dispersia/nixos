@@ -39,7 +39,7 @@ vim.pack.add({
   "https://github.com/dispersia/lsp-status.nvim",
   "https://github.com/nvim-lualine/lualine.nvim",
   "https://github.com/folke/which-key.nvim",
-  --"https://github.com/HiPhish/rainbow-delimiters.nvim",
+  "https://github.com/HiPhish/rainbow-delimiters.nvim",
   "https://github.com/folke/trouble.nvim",
   "https://github.com/mfussenegger/nvim-dap",
   "https://github.com/nvim-neotest/nvim-nio",
@@ -48,7 +48,8 @@ vim.pack.add({
   "https://github.com/jose-elias-alvarez/nvim-lsp-ts-utils",
   "https://github.com/seblyng/roslyn.nvim",
   "https://github.com/f-person/git-blame.nvim",
-  "https://github.com/NeogitOrg/neogit"
+  "https://github.com/NeogitOrg/neogit",
+  "https://github.com/Dispersia/build123d.nvim"
 })
 
 require("plugins")
