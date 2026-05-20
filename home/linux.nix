@@ -1,6 +1,7 @@
 { pkgs, ... }:
 {
   imports = [
+    ./language
     ./environment/fcitx5
     ./environment/kde
     ./environment/niri
