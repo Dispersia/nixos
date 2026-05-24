@@ -59,27 +59,27 @@ let
       hash = "sha256-wuALbVEpSsfb7cX0lLW3IdY4NQZ5OOjzZ+4G18Az3mw=";
     };
     postPatch = ''
-      substituteInPlace patcher.py \
-        --replace-fail 'from aqt.utils import tr' 'from .translations import tr'
+            substituteInPlace patcher.py \
+              --replace-fail 'from aqt.utils import tr' 'from .translations import tr'
 
-      cat >> __init__.py << 'PATCH'
+            cat >> __init__.py << 'PATCH'
 
-def _nix_sync_bg_colors():
-    try:
-        conf = config.get_config()
-        colors = conf.get("colors", {})
-        lt = colors.get("light", {})
-        dk = colors.get("dark", {})
-        mw.col.conf["modern_menu_bg_color_light"] = lt.get("--bg", "#F5F5F5")
-        mw.col.conf["modern_menu_bg_color_dark"] = dk.get("--bg", "#2C2C2C")
-        mw.col.conf["modern_menu_sidebar_bg_color_light"] = lt.get("--canvas-inset", "#EEEEEE")
-        mw.col.conf["modern_menu_sidebar_bg_color_dark"] = dk.get("--canvas-inset", "#3C3C3C")
-        mw.col.setMod()
-    except Exception:
-        pass
+      def _nix_sync_bg_colors():
+          try:
+              conf = config.get_config()
+              colors = conf.get("colors", {})
+              lt = colors.get("light", {})
+              dk = colors.get("dark", {})
+              mw.col.conf["modern_menu_bg_color_light"] = lt.get("--bg", "#F5F5F5")
+              mw.col.conf["modern_menu_bg_color_dark"] = dk.get("--bg", "#2C2C2C")
+              mw.col.conf["modern_menu_sidebar_bg_color_light"] = lt.get("--canvas-inset", "#EEEEEE")
+              mw.col.conf["modern_menu_sidebar_bg_color_dark"] = dk.get("--canvas-inset", "#3C3C3C")
+              mw.col.setMod()
+          except Exception:
+              pass
 
-gui_hooks.profile_did_open.append(_nix_sync_bg_colors)
-PATCH
+      gui_hooks.profile_did_open.append(_nix_sync_bg_colors)
+      PATCH
     '';
   });
 in

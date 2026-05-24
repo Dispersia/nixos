@@ -5,8 +5,8 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     nix-darwin = {
-     url = "github:nix-darwin/nix-darwin";
-     inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nix-darwin/nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     dms = {
@@ -65,22 +65,33 @@
                 {
                   imports = [
                     ./users/${username}/home.nix
-                 ];
+                  ];
                 };
               home-manager.extraSpecialArgs = { inherit inputs hostName username; };
             }
-            {
-              environment.etc."brave/policies/managed/brave-default-search.json".text = ''
-                {
-                  "DefaultSearchProviderEnabled": true,
-                  "DefaultSearchProviderName": "Google",
-                  "DefaultSearchProviderSearchURL": "https://www.google.com/search?q={searchTerms}"
-                }
-              '';
-            }
+            (
+              { pkgs, ... }:
+              {
+                environment.etc."brave/policies/managed/brave-default-search.json".text = ''
+                  {
+                    "DefaultSearchProviderEnabled": true,
+                    "DefaultSearchProviderName": "Google",
+                    "DefaultSearchProviderSearchURL": "https://www.google.com/search?q={searchTerms}"
+                  }
+                '';
+
+                environment.systemPackages = [
+                  (pkgs.segger-jlink.overrideAttrs (oldAttrs: {
+                    version = "V944";
+                    src = ./JLink_Linux_V944_x86_64.tgz;
+                  }))
+                ];
+              }
+            )
           ];
         };
-      mkDarwinHost = hostName: username:
+      mkDarwinHost =
+        hostName: username:
         inputs.nix-darwin.lib.darwinSystem {
           system = darwinSystem;
           specialArgs = { inherit inputs hostName username; };
@@ -91,29 +102,29 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
- 
+
               home-manager.users.${username} = {
                 imports = [ ./users/${username}/home.nix ];
               };
 
               home-manager.extraSpecialArgs = { inherit inputs hostName username; };
             }
-            ({ pkgs, ... }: {
+            (
+              { pkgs, ... }:
+              {
 
+                environment.shells = with pkgs; [
+                  nushell
+                ];
 
-  environment.shells = with pkgs; [
-    nushell
-  ];
-
-
-            })
+              }
+            )
           ];
         };
     in
     {
       formatter.${linuxSystem} = nixpkgs.legacyPackages.${linuxSystem}.nixfmt-tree;
       formatter.${darwinSystem} = nixpkgs.legacyPackages.${darwinSystem}.nixfmt-tree;
-
 
       nixosConfigurations = {
         laptop = mkNixosHost "laptop" "dispe";

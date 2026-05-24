@@ -1,4 +1,9 @@
-{ pkgs, hostName, username, ... }:
+{
+  pkgs,
+  hostName,
+  username,
+  ...
+}:
 {
   imports = [
     ../../home/core.nix

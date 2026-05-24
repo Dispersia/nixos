@@ -5,7 +5,26 @@
   username,
   ...
 }:
-{ 
+let
+  nrfconnect = pkgs.writeShellScriptBin "nrfconnect" ''
+    SQUASHFS="$HOME/.local/share/nrfconnect/squashfs-root"
+    NRFUTIL_DEVICE="$SQUASHFS/resources/app.asar.unpacked/resources/nrfutil-sandboxes/8.1.1/device/2.17.5/bin/nrfutil-device"
+
+    if [ -f "$NRFUTIL_DEVICE" ] && ! ${pkgs.patchelf}/bin/patchelf --print-rpath "$NRFUTIL_DEVICE" 2>/dev/null | grep -q "current-system"; then
+      ${pkgs.patchelf}/bin/patchelf --add-rpath /run/current-system/sw/lib "$NRFUTIL_DEVICE"
+    fi
+
+    export LD_LIBRARY_PATH="${lib.makeLibraryPath (with pkgs; [
+      glib gtk3 nss nspr dbus.lib cups.lib libdrm gdk-pixbuf pango cairo
+      libX11 libXcomposite libXdamage libXext libXfixes libXrandr
+      libgbm expat libxcb libxkbcommon alsa-lib libglvnd systemd
+    ])}:/run/current-system/sw/lib"
+
+    export PATH="${pkgs.xdg-utils}/bin:$PATH"
+    exec "$SQUASHFS/nrfconnect" --no-sandbox "$@"
+  '';
+in
+{
   virtualisation.libvirtd.enable = true;
 
   programs.virt-manager.enable = true;
@@ -35,6 +54,15 @@
     pkgs.segger-jlink
     pkgs.nrf-udev
   ];
+
+  system.activationScripts.jlinkSymlink = {
+    text = ''
+      mkdir -p /opt/SEGGER
+      ln -sfn ${pkgs.segger-jlink}/opt/SEGGER/JLink /opt/SEGGER/JLink
+    '';
+  };
+
+  environment.systemPackages = [ nrfconnect ];
 
   environment.sessionVariables = {
     GBM_BACKEND = "nvidia-drm";
