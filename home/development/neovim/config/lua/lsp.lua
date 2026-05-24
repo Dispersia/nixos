@@ -1,6 +1,7 @@
 vim.lsp.enable({
   "arduino",
   "bicep",
+  "cplusplus",
   "dart",
   "fsautocomplete",
   "jsonnet",
