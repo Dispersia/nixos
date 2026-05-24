@@ -31,6 +31,11 @@
     enable32Bit = true;
   };
 
+  services.udev.packages = [
+    pkgs.segger-jlink
+    pkgs.nrf-udev
+  ];
+
   environment.sessionVariables = {
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
@@ -58,6 +63,8 @@
   };
 
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.permittedInsecurePackages = [ "segger-jlink-qt4-874" ];
+  nixpkgs.config.segger-jlink.acceptLicense = true;
 
   i18n.defaultLocale = "en_US.UTF-8";
 
