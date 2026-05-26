@@ -25,6 +25,11 @@
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+  };
+
   services.xserver.videoDrivers = [ "nvidia" ];
 
   networking.hostName = hostName;
