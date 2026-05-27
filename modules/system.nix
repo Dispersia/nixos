@@ -31,6 +31,10 @@ in
 
   programs.nix-ld.enable = true;
 
+  programs.nix-ld.libraries = [
+    pkgs.libidn2
+  ];
+
   users.users.${username} = {
     isNormalUser = true;
     description = username;

@@ -9,7 +9,6 @@ vim.pack.add({
   "https://github.com/sphamba/smear-cursor.nvim",
   "https://github.com/folke/noice.nvim",
   "https://github.com/folke/flash.nvim",
-  "https://github.com/mason-org/mason.nvim",
   "https://github.com/nvimdev/dashboard-nvim",
   "https://github.com/stevearc/conform.nvim",
   "https://github.com/folke/ts-comments.nvim",
@@ -46,7 +45,6 @@ vim.pack.add({
   "https://github.com/rcarriga/nvim-dap-ui",
   "https://github.com/stevearc/dressing.nvim",
   "https://github.com/jose-elias-alvarez/nvim-lsp-ts-utils",
-  "https://github.com/seblyng/roslyn.nvim",
   "https://github.com/f-person/git-blame.nvim",
   "https://github.com/NeogitOrg/neogit",
   "https://github.com/Dispersia/build123d.nvim"

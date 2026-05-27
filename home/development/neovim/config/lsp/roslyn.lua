@@ -3,7 +3,7 @@ local util = require("util")
 ---@type vim.lsp.Config
 return {
   cmd = {
-    "roslyn",
+    "Microsoft.CodeAnalysis.LanguageServer",
     "--logLevel=Information",
     "--extensionLogDirectory=" .. vim.fs.dirname(vim.lsp.log.get_filename()), "--stdio"
   },
