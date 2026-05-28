@@ -42,6 +42,7 @@
     let
       linuxSystem = "x86_64-linux";
       darwinSystem = "aarch64-darwin";
+      androidSystem = "aarch64-linux";
       mkNixosHost =
         hostName: username:
         nixpkgs.lib.nixosSystem {
@@ -90,6 +91,48 @@
             )
           ];
         };
+      mkAndroidHost =
+        hostName: username:
+        nixpkgs.lib.nixosSystem {
+          system = androidSystem;
+          specialArgs = { inherit inputs hostName username; };
+          modules = [
+            ./hosts/${hostName}
+
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+
+              home-manager.users.${username} =
+                {
+                  config,
+                  lib,
+                  pkgs,
+                  ...
+                }:
+                {
+                  imports = [
+                    ./users/${username}/home.nix
+                  ];
+                };
+              home-manager.extraSpecialArgs = { inherit inputs hostName username; };
+            }
+            (
+              { pkgs, ... }:
+              {
+                environment.etc."brave/policies/managed/brave-default-search.json".text = ''
+                  {
+                    "DefaultSearchProviderEnabled": true,
+                    "DefaultSearchProviderName": "Google",
+                    "DefaultSearchProviderSearchURL": "https://www.google.com/search?q={searchTerms}"
+                  }
+                '';
+              }
+            )
+          ];
+        };
+
       mkDarwinHost =
         hostName: username:
         inputs.nix-darwin.lib.darwinSystem {
@@ -129,6 +172,7 @@
       nixosConfigurations = {
         laptop = mkNixosHost "laptop" "dispe";
         work-desktop = mkNixosHost "work-desktop" "dispe";
+        android = mkAndroidHost "phone" "dispe";
       };
 
       darwinConfigurations = {
