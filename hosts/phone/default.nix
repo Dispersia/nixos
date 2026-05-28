@@ -23,8 +23,13 @@
   boot.kernelModules = [ "virtio_gpu" ];
 
   fileSystems."/" = {
-    device = "/dev/vda1";
+    device = "/dev/vda2";
     fsType = "ext4";
+  };
+
+  fileSystems."/boot" = {
+    device = "/dev/vda1";
+    fsType = "vfat";
   };
 
   hardware.graphics.enable = true;
