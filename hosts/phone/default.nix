@@ -22,6 +22,11 @@
 
   boot.kernelModules = [ "virtio_gpu" ];
 
+  fileSystems."/" = {
+    device = "/dev/vda1";
+    fsType = "ext4";
+  };
+
   hardware.graphics.enable = true;
 
   services.desktopManager.plasma6.enable = true;
