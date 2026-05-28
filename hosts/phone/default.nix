@@ -42,7 +42,7 @@
 
   environment.systemPackages = with pkgs; [
     tigervnc
-    krfb
+    kdePackages.krfb
     wl-clipboard
   ];
 
