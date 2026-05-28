@@ -7,7 +7,7 @@
 }:
 {
   boot.loader.grub.enable = false;
-  boot.loader.generic-extlinux-compatible.enable = true;
+  boot.loader.generic-extlinux-compatible.enable = false;
 
   boot.initrd.availableKernelModules = [
     "virtio_blk"
@@ -27,10 +27,6 @@
     fsType = "ext4";
   };
 
-  fileSystems."/boot" = {
-    device = "/dev/vda1";
-    fsType = "vfat";
-  };
 
   hardware.graphics.enable = true;
 
