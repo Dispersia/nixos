@@ -3,7 +3,7 @@
   home = {
     inherit username;
 
-    stateVersion = "26.05";
+    stateVersion = "26.11";
   };
 
   programs.home-manager.enable = true;
