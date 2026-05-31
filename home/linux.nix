@@ -2,6 +2,7 @@
 {
   imports = [
     ./language
+    ./gaming
     ./environment/fcitx5
     ./environment/kde
     ./environment/niri

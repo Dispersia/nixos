@@ -145,5 +145,13 @@ in
 
   time.timeZone = "America/Phoenix";
 
-  #system.rebuild.flake = "/home/${username}/.config/nixos#${hostName}";
+  programs.steam = {
+    enable = true;
+    gamescopeSession.enable = true;
+    extraCompatPackages = with pkgs; [
+      proton-ge-bin
+    ];
+  };
+
+  programs.gamemode.enable = true;
 }
