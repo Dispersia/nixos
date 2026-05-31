@@ -4,5 +4,6 @@
     protonup-qt
     mangohud
     goverlay
+    discord
   ];
 }
