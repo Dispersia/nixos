@@ -35,6 +35,8 @@
 
     lsof
 
+    gh
+
     inputs.b123d-server.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 

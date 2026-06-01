@@ -5,7 +5,7 @@
   ...
 }:
 {
-  imports = [ inputs.dms.homeModules.dank-material-shell ];
+  imports = [ inputs.noctalia-shell.homeModules.default ];
 
   home.packages = with pkgs; [
     niri
@@ -16,9 +16,8 @@
     xwayland
   ];
 
-  programs.dank-material-shell = {
+  programs.noctalia-shell = {
     enable = true;
-    enableSystemMonitoring = true;
   };
 
   home.file.".config/niri" = {
