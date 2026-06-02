@@ -5,7 +5,7 @@ include "dms/layout.kdl"
 include "dms/alttab.kdl"
 include "dms/binds.kdl"
 
-spawn-at-startup "dms" "run"
+spawn-at-startup "noctalia-shell"
 
 spawn-at-startup "bash" "-c" "wl-paste --watch cliphist store &"
 

@@ -14,6 +14,7 @@
     mako
     swayidle
     xwayland
+    xwayland-satellite
   ];
 
   programs.noctalia-shell = {

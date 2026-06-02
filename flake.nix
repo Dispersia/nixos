@@ -65,6 +65,7 @@
                   mako
                   swayidle
                   xwayland
+                  xwayland-satellite
                 ];
                 text = ''
                   exec niri "$@"
