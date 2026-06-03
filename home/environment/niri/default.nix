@@ -15,10 +15,27 @@
     swayidle
     xwayland
     xwayland-satellite
+    swaybg
   ];
+
+  dconf.settings."org/gnome/desktop/interface" = {
+    color-scheme = "prefer-dark";
+  };
 
   programs.noctalia-shell = {
     enable = true;
+    settings = {
+      colorSchemes = {
+        darkMode = true;
+        predefinedScheme = "Tokyo-Night";
+      };
+      general = {
+        enableShadows = false;
+      };
+      bar = {
+        outerCorners = false;
+      };
+    };
   };
 
   home.file.".config/niri" = {

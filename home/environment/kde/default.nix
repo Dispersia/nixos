@@ -25,22 +25,12 @@
   };
 
   gtk = {
-    enable = true;
-
-    theme = {
-      name = "Breeze-Dark";
-      package = pkgs.kdePackages.breeze-gtk;
-    };
-
     gtk3.extraConfig = {
       gtk-application-prefer-dark-theme = true;
     };
 
-    gtk4 = {
-      theme = null;
-      extraConfig = {
-        gtk-application-prefer-dark-theme = true;
-      };
+    gtk4.extraConfig = {
+      gtk-application-prefer-dark-theme = true;
     };
   };
 
@@ -51,7 +41,6 @@
   };
 
   home.packages = with pkgs; [
-    kdePackages.breeze-gtk
     kdePackages.breeze-icons
     kdePackages.kde-gtk-config
   ];

@@ -3,10 +3,12 @@ layout {
     off
   }
   focus-ring {
-    off
+    width 2
+    active-color "#4a90d9"
+    inactive-color "#1a1a1a"
   }
   gaps 0
-  background-color "transparent"
+  background-color "#000000"
 }
 
 layer-rule {
@@ -40,6 +42,9 @@ window-rule {
 window-rule {
     geometry-corner-radius 0
     clip-to-geometry true
+    shadow {
+        off
+    }
 }
 
 window-rule {
