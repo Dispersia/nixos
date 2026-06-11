@@ -22,18 +22,16 @@
     color-scheme = "prefer-dark";
   };
 
-  programs.noctalia-shell = {
+  programs.noctalia = {
     enable = true;
     settings = {
-      colorSchemes = {
-        darkMode = true;
-        predefinedScheme = "Tokyo-Night";
+      theme = {
+        mode = "dark";
+        source = "builtin";
+        builtin = "Tokyo-Night";
       };
-      general = {
-        enableShadows = false;
-      };
-      bar = {
-        outerCorners = false;
+      shell = {
+        enable_shadows = false;
       };
     };
   };
