@@ -32,6 +32,11 @@
 
   services.xserver.videoDrivers = [ "nvidia" ];
 
+  environment.sessionVariables = {
+    GBM_BACKEND = "nvidia-drm";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+  };
+
   networking.hostName = hostName;
   networking.networkmanager.enable = true;
 

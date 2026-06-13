@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  lib,
   hostName,
   ...
 }:
@@ -9,6 +10,7 @@
     ../../modules/system.nix
 
     ./hardware-configuration.nix
+    ./vfio.nix
   ];
 
   boot.loader = {
@@ -17,6 +19,11 @@
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  services.displayManager.sddm = {
+    enable = lib.mkForce true;
+    wayland.enable = true;
+  };
 
   networking.hostName = hostName;
   networking.networkmanager.enable = true;
