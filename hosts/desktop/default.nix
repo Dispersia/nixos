@@ -10,7 +10,6 @@
     ../../modules/system.nix
 
     ./hardware-configuration.nix
-    ./vfio.nix
   ];
 
   boot.loader = {
@@ -27,6 +26,14 @@
 
   networking.hostName = hostName;
   networking.networkmanager.enable = true;
+
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = true;
+      PermitRootLogin = "no";
+    };
+  };
 
   hardware.bluetooth = {
     enable = true;

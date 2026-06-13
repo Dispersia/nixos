@@ -25,10 +25,6 @@ let
   '';
 in
 {
-  virtualisation.libvirtd.enable = true;
-
-  programs.virt-manager.enable = true;
-
   programs.nix-ld.enable = true;
 
   programs.nix-ld.libraries = [
@@ -43,7 +39,6 @@ in
       "networkmanager"
       "video"
       "kvm"
-      "libvirtd"
       "adbusers"
     ];
     shell = pkgs.nushell;
