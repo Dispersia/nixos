@@ -202,6 +202,7 @@
           nixosConfigurations = {
             laptop = mkNixosHost "laptop" "dispe";
             work-desktop = mkNixosHost "work-desktop" "dispe";
+            desktop = mkNixosHost "desktop" "dispe";
             android = mkAndroidHost "phone" "dispe";
           };
 

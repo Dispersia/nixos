@@ -47,6 +47,7 @@ in
       "adbusers"
     ];
     shell = pkgs.nushell;
+    hashedPassword = "$6$VJJxmf.mb9Z5qP8/$tqID2ttKzN/d9tELnVdrR1MVDeMy.JdxEOuOhRWKDDg809IGo5E2s/QSknrw72Lmk/Vl.gRCuf9K1fvDrd1N81";
   };
 
   hardware.graphics = {
