@@ -7,6 +7,7 @@
     ./environment/kde
     ./environment/niri
     ./development/android
+    ./development/bambu-studio
     ./development/freecad
     ./development/kicad
     ./development/postman
