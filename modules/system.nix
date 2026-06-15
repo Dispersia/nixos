@@ -62,7 +62,9 @@ in
     '';
   };
 
-  environment.systemPackages = [ nrfconnect ];
+  environment.systemPackages = [
+    nrfconnect
+  ];
 
   nix.settings.trusted-users = [ username ];
 

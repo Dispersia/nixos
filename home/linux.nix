@@ -7,6 +7,7 @@
     ./environment/kde
     ./environment/niri
     ./development/android
+    ./development/freecad
     ./development/kicad
     ./development/postman
     ./development/vscode
