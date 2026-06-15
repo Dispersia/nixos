@@ -44,7 +44,6 @@ vim.pack.add({
   "https://github.com/nvim-neotest/nvim-nio",
   "https://github.com/rcarriga/nvim-dap-ui",
   "https://github.com/stevearc/dressing.nvim",
-  "https://github.com/jose-elias-alvarez/nvim-lsp-ts-utils",
   "https://github.com/f-person/git-blame.nvim",
   "https://github.com/NeogitOrg/neogit",
   "https://github.com/Dispersia/build123d.nvim"
