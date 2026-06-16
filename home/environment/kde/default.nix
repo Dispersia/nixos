@@ -13,9 +13,9 @@
   programs.plasma = {
     enable = true;
     workspace = {
-      lookAndFeel = "org.kde.breeze.desktop";
+      lookAndFeel = "org.kde.breezedark.desktop";
       theme = "breeze-dark";
-      colorScheme = "BreezeDark";
+      colorScheme = "TokyoNight";
     };
     configFile.kwinrc.Wayland.InputMethod.value =
       "/etc/profiles/per-user/${username}/share/applications/org.fcitx.Fcitx5.desktop";
@@ -39,6 +39,8 @@
     platformTheme.name = "kde";
     style.name = "breeze";
   };
+
+  home.file.".local/share/color-schemes/TokyoNight.colors".source = ./TokyoNight.colors;
 
   home.packages = with pkgs; [
     kdePackages.breeze-icons
