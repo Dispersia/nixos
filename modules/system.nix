@@ -25,6 +25,8 @@ let
   '';
 in
 {
+  imports = [ ./nordvpn.nix ];
+
   programs.nix-ld.enable = true;
 
   programs.nix-ld.libraries = [
@@ -40,6 +42,7 @@ in
       "video"
       "kvm"
       "adbusers"
+      "nordvpn"
     ];
     shell = pkgs.nushell;
     hashedPassword = "$6$VJJxmf.mb9Z5qP8/$tqID2ttKzN/d9tELnVdrR1MVDeMy.JdxEOuOhRWKDDg809IGo5E2s/QSknrw72Lmk/Vl.gRCuf9K1fvDrd1N81";
