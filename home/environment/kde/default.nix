@@ -22,6 +22,7 @@
     configFile.kded5rc = {
       "Module-gtkconfig"."autoload" = false;
     };
+    configFile.plasmanotifyrc.Notifications.PopupTimeout.value = 2500;
   };
 
   gtk = {
