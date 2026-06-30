@@ -24,8 +24,8 @@
     };
     configFile.plasmanotifyrc.Notifications.PopupTimeout.value = 2500;
     configFile.plasma-localerc = {
-      Formats.LANG = "zh_TW.UTF-8";
-      Translations.LANGUAGE = "zh_TW";
+      Formats.LANG = "ja_JP.UTF-8";
+      Translations.LANGUAGE = "ja_JP";
     };
   };
 
