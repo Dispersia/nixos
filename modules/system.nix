@@ -25,7 +25,7 @@ let
   '';
 in
 {
-  imports = [ ./nordvpn.nix ];
+  #imports = [ ./nordvpn.nix ];
 
   programs.nix-ld.enable = true;
 
@@ -94,7 +94,7 @@ in
   nixpkgs.config.permittedInsecurePackages = [ "segger-jlink-qt4-874" ];
   nixpkgs.config.segger-jlink.acceptLicense = true;
 
-  i18n.defaultLocale = "en_US.UTF-8";
+  i18n.defaultLocale = "zh_TW.UTF-8";
 
   fonts = {
     packages = with pkgs; [
