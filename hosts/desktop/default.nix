@@ -40,5 +40,17 @@
     powerOnBoot = true;
   };
 
+  systemd.services.bluetooth-link-key-sync = {
+    description = "Sync BR/EDR link key with Windows dual-boot";
+    before = [ "bluetooth.service" ];
+    wantedBy = [ "bluetooth.service" ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      info="/var/lib/bluetooth/00:1A:7D:DA:71:15/01:29:B5:0A:13:BD/info"
+      [ -f "$info" ] || exit 0
+      ${pkgs.gnused}/bin/sed -i 's/^Key=.*/Key=8D45FD33B5A7B9B60638BC91B6D038FC/' "$info"
+    '';
+  };
+
   system.stateVersion = "26.11";
 }
