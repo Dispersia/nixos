@@ -11,11 +11,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    noctalia-shell = {
-      url = "github:noctalia-dev/noctalia-shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     home-manager = {
       url = "github:nix-community/home-manager/master";
 
@@ -51,27 +46,9 @@
         {
           formatter = pkgs.nixfmt-tree;
 
-          packages =
-            {
-              neovim = pkgs.neovim;
-            }
-            // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
-              niri = pkgs.writeShellApplication {
-                name = "niri";
-                runtimeInputs = with pkgs; [
-                  niri
-                  fuzzel
-                  swaylock
-                  mako
-                  swayidle
-                  xwayland
-                  xwayland-satellite
-                ];
-                text = ''
-                  exec niri "$@"
-                '';
-              };
-            };
+          packages = {
+            neovim = pkgs.neovim;
+          };
         };
 
       flake =

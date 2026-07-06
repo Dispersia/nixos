@@ -5,7 +5,6 @@
     ./gaming
     ./environment/fcitx5
     ./environment/kde
-    ./environment/niri
     ./development/android
     ./development/arduino
     ./development/bambu-studio
