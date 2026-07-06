@@ -23,6 +23,11 @@ let
     export PATH="${pkgs.xdg-utils}/bin:$PATH"
     exec "$SQUASHFS/nrfconnect" --no-sandbox "$@"
   '';
+
+  libxml2-so2-compat = pkgs.runCommand "libxml2-so2-compat" { } ''
+    mkdir -p $out/lib
+    ln -s ${pkgs.libxml2.out}/lib/libxml2.so.16 $out/lib/libxml2.so.2
+  '';
 in
 {
   #imports = [ ./nordvpn.nix ];
@@ -31,7 +36,33 @@ in
 
   programs.nix-ld.libraries = [
     pkgs.libidn2
-  ];
+
+    libxml2-so2-compat
+  ]
+  ++ (with pkgs; [
+    libX11
+    libxcb
+    xcbutil
+    xcbutilimage
+    xcbutilkeysyms
+    xcbutilrenderutil
+    xcbutilwm
+    libXrender
+    libXi
+    libXext
+    libXfixes
+    libSM
+    libICE
+    systemd
+    stdenv.cc.cc.lib
+    zlib
+    fontconfig.lib
+    freetype
+    libglvnd
+    libxkbcommon
+    dbus.lib
+    glib.out
+  ]);
 
   users.users.${username} = {
     isNormalUser = true;

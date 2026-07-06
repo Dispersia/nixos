@@ -8,6 +8,7 @@
     ./development/android
     ./development/arduino
     ./development/bambu-studio
+    ./development/blender
     ./development/freecad
     ./development/kicad
     ./development/postman
