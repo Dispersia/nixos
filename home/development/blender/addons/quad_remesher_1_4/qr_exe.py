@@ -29,6 +29,10 @@ import tempfile
 import time
 
 
+def qr_launch_prefix():
+    launcher = os.environ.get("QUADREMESHER_LAUNCHER", "").strip()
+    return launcher.split() if launcher else []
+
 
 def writeSettingsFile(settingsFilename, inputFilename, theOp, enableTiming):
     props = bpy.context.scene.qremesher
@@ -68,7 +72,7 @@ def exe_launchRemeshing(enginePath, settingsFilename, theOp, verboseDebug):
     if (verboseDebug): 
         print("Launch : path=" + enginePath + "\n    settings_path=" + settingsFilename + "\n")
 
-    theOp.progressData.RemeshingProcess = subprocess.Popen([enginePath, "-s", settingsFilename])   #NB: Popen automatically add quotes around parameters when there are SPACES inside
+    theOp.progressData.RemeshingProcess = subprocess.Popen([*qr_launch_prefix(), enginePath, "-s", settingsFilename])
 
     if (verboseDebug): 
         print("  -> theOp.progressData.RemeshingProcess = " + str(theOp.progressData.RemeshingProcess) + "\n")

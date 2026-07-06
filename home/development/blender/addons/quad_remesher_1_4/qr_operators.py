@@ -212,7 +212,7 @@ def getEnginePath():
 def debug_returnLoadRetopoTime(startLoadRetopoTime, endLoadRetopoTime):
     try:
         enginePath = getEnginePath()
-        subprocess.Popen([enginePath, "-returnChrono", "-startImportRetopoTime", str(startLoadRetopoTime), "-endImportRetopoTime", str(endLoadRetopoTime)])   #NB: Popen automatically add quotes around parameters when there are SPACES inside
+        subprocess.Popen([*qr_launch_prefix(), enginePath, "-returnChrono", "-startImportRetopoTime", str(startLoadRetopoTime), "-endImportRetopoTime", str(endLoadRetopoTime)])
     except:
         return None
 
@@ -863,7 +863,7 @@ class QREMESHER_OT_license_manager(bpy.types.Operator):
 
         #console_print("Launching LicenseManager : " + str(licenseManagerPath))
         try:
-            subprocess.Popen([licenseManagerPath, "-hostApp", "Blender", "-haVer", getHostAppVer()])
+            subprocess.Popen([*qr_launch_prefix(), licenseManagerPath, "-hostApp", "Blender", "-haVer", getHostAppVer()])
         except Exception:
             #console_print("ERROR : " + str(licenseManagerPath))
             helpLinkStr = "\nPlease check Trouble-Shooting section in the FAQ (https://www.exoside.com/php_ext/qr_tsl.php?ha=Blender&v="+__QR_plugin_version__+"&id=LicMgrLaunch)"
@@ -1151,7 +1151,7 @@ class QREMESHER_OT_News_LatestVer(bpy.types.Operator):
         #console_print("Launching LicenseManager : " + str(licenseManagerPath))
         try:
             verStr = "1.4.1"
-            subprocess.Popen([licenseManagerPath, "-cn", "-hostApp", "Blender", "-prodVer", verStr, "-haVer", getHostAppVer()])
+            subprocess.Popen([*qr_launch_prefix(), licenseManagerPath, "-cn", "-hostApp", "Blender", "-prodVer", verStr, "-haVer", getHostAppVer()])
 
         except Exception:
             #console_print("ERROR : " + str(licenseManagerPath))
