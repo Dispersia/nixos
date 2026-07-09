@@ -122,7 +122,7 @@ in
   nixpkgs.config.permittedInsecurePackages = [ "segger-jlink-qt4-874" ];
   nixpkgs.config.segger-jlink.acceptLicense = true;
 
-  i18n.defaultLocale = "ja_JP.UTF-8";
+  i18n.defaultLocale = "en_US.UTF-8";
 
   fonts = {
     packages = with pkgs; [
