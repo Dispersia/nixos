@@ -55,8 +55,8 @@ let
     src = pkgs.fetchFromGitHub {
       owner = "thepeacemonk";
       repo = "Onigiri";
-      rev = "5213df267596ed98e271a4b1159b7e8a3d575267";
-      hash = "sha256-wuALbVEpSsfb7cX0lLW3IdY4NQZ5OOjzZ+4G18Az3mw=";
+      rev = "9eeba041516eb489e25c1cceca27de3e7c7b8328";
+      hash = "sha256-AI5olMxp6MrU0JEjr1QHcxLst9GsUc8jbyYwEikuBks=";
     };
     postPatch = ''
             substituteInPlace patcher.py \
