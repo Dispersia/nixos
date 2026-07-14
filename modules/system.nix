@@ -124,6 +124,8 @@ in
 
   i18n.defaultLocale = "en_US.UTF-8";
 
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
   fonts = {
     packages = with pkgs; [
       material-design-icons

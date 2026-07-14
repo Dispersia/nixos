@@ -4,6 +4,15 @@
     protonup-qt
     mangohud
     goverlay
-    discord
+
+    (symlinkJoin {
+      name = "discord";
+      paths = [ discord ];
+      nativeBuildInputs = [ makeWrapper ];
+      postBuild = ''
+        wrapProgram $out/bin/discord \
+          --add-flags "--enable-wayland-ime"
+      '';
+    })
   ];
 }
