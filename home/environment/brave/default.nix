@@ -17,6 +17,8 @@
     ];
   };
 
+  xdg.dataFile."applications/mimeapps.list".force = true;
+
   xdg.mimeApps = {
     enable = true;
     defaultApplications = {
