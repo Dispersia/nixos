@@ -11,6 +11,7 @@
     ./development/blender
     ./development/kicad
     ./development/postman
+    ./development/unityhub
     ./development/vscode
   ];
 
