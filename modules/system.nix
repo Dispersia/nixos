@@ -70,7 +70,6 @@ in
       "networkmanager"
       "video"
       "kvm"
-      "adbusers"
     ];
     shell = pkgs.nushell;
     hashedPassword = "$6$VJJxmf.mb9Z5qP8/$tqID2ttKzN/d9tELnVdrR1MVDeMy.JdxEOuOhRWKDDg809IGo5E2s/QSknrw72Lmk/Vl.gRCuf9K1fvDrd1N81";
@@ -79,6 +78,16 @@ in
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
+  };
+
+  fileSystems."/dev/shm" = {
+    device = "tmpfs";
+    fsType = "tmpfs";
+    options = [
+      "nosuid"
+      "nodev"
+      "size=24G"
+    ];
   };
 
   services.udev.packages = [
