@@ -1,8 +1,24 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
+let
+  brave = pkgs.brave // {
+    override =
+      { commandLineArgs ? "", ... }:
+      pkgs.brave.overrideAttrs (old: {
+        preFixup = (old.preFixup or "") + ''
+          gappsWrapperArgs+=(--add-flags ${lib.escapeShellArg commandLineArgs})
+        '';
+      });
+  };
+in
 {
   programs.chromium = {
     enable = true;
-    package = pkgs.brave;
+    package = brave;
     extensions = [
       { id = "eimadpbcbfnmbkopoojfekhnkhdbieeh"; } # dark-reader
       { id = "nngceckbapebfimnlniiiahkandclblb"; } # bitwarden
@@ -13,7 +29,7 @@
     ];
     commandLineArgs = [
       "--password-store=basic"
-      "--disable-features=WebRtcAllowInputVolumeAdjustment"
+      "--disable-features=OutdatedBuildDetector,UseChromeOSDirectVideoDecoder,WebRtcAllowInputVolumeAdjustment"
     ];
   };
 
