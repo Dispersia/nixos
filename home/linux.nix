@@ -26,6 +26,8 @@
   home.packages = with pkgs; [
     wl-clipboard
     postgresql
+    qbittorrent
+    podman-desktop
   ];
 
   services.gpg-agent = {

@@ -27,6 +27,10 @@
 
   networking.hostName = hostName;
   networking.networkmanager.enable = true;
+  networking.firewall.allowedTCPPorts = [
+    3724
+    8085
+  ];
 
   services.openssh = {
     enable = true;

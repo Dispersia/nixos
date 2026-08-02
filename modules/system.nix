@@ -70,6 +70,7 @@ in
       "networkmanager"
       "video"
       "kvm"
+      "docker"
     ];
     shell = pkgs.nushell;
     hashedPassword = "$6$VJJxmf.mb9Z5qP8/$tqID2ttKzN/d9tELnVdrR1MVDeMy.JdxEOuOhRWKDDg809IGo5E2s/QSknrw72Lmk/Vl.gRCuf9K1fvDrd1N81";
@@ -104,7 +105,10 @@ in
 
   environment.systemPackages = [
     nrfconnect
+    pkgs.docker-compose
   ];
+
+  virtualisation.docker.enable = true;
 
   nix.settings.trusted-users = [ username ];
 
@@ -128,7 +132,7 @@ in
   };
 
   nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.permittedInsecurePackages = [ "segger-jlink-qt4-874" ];
+  nixpkgs.config.permittedInsecurePackages = [ "segger-jlink-qt4-952" ];
   nixpkgs.config.segger-jlink.acceptLicense = true;
 
   i18n.defaultLocale = "en_US.UTF-8";

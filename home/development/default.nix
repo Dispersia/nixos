@@ -8,5 +8,6 @@
 
   home.packages = [
     (pkgs.callPackage ./kotlin-lsp.nix { })
+    pkgs.kubectl
   ];
 }
