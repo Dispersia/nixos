@@ -92,16 +92,8 @@ in
   };
 
   services.udev.packages = [
-    pkgs.segger-jlink
     pkgs.nrf-udev
   ];
-
-  system.activationScripts.jlinkSymlink = {
-    text = ''
-      mkdir -p /opt/SEGGER
-      ln -sfn ${pkgs.segger-jlink}/opt/SEGGER/JLink /opt/SEGGER/JLink
-    '';
-  };
 
   environment.systemPackages = [
     nrfconnect
@@ -132,8 +124,6 @@ in
   };
 
   nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.permittedInsecurePackages = [ "segger-jlink-qt4-952" ];
-  nixpkgs.config.segger-jlink.acceptLicense = true;
 
   i18n.defaultLocale = "en_US.UTF-8";
 
