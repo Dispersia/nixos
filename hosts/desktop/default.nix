@@ -9,6 +9,7 @@
   imports = [
     ../../modules/system.nix
     ../../modules/nordvpn.nix
+    ../../modules/tailscale.nix
 
     ./hardware-configuration.nix
   ];

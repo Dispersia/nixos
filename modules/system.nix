@@ -102,13 +102,6 @@ in
 
   virtualisation.docker.enable = true;
 
-  environment.systemPackages = [
-    nrfconnect
-    pkgs.docker-compose
-  ];
-
-  virtualisation.docker.enable = true;
-
   nix.settings.trusted-users = [ username ];
 
   nix.settings = {
