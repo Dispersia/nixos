@@ -90,13 +90,6 @@
                         "DefaultSearchProviderSearchURL": "https://www.google.com/search?q={searchTerms}"
                       }
                     '';
-
-                    environment.systemPackages = [
-                      (pkgs.segger-jlink.overrideAttrs (oldAttrs: {
-                        version = "V944";
-                        src = ./JLink_Linux_V944_x86_64.tgz;
-                      }))
-                    ];
                   }
                 )
               ];
@@ -180,6 +173,7 @@
             laptop = mkNixosHost "laptop" "dispe";
             work-desktop = mkNixosHost "work-desktop" "dispe";
             desktop = mkNixosHost "desktop" "dispe";
+            home-server = mkNixosHost "home-server" "dispe";
             android = mkAndroidHost "phone" "dispe";
           };
 
