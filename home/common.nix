@@ -5,12 +5,6 @@
   ...
 }:
 {
-  imports = [
-    ./development
-    ./environment
-    ./shell
-  ];
-
   home.packages = with pkgs; [
     vim
     git
@@ -37,7 +31,7 @@
 
     gh
 
-    inputs.b123d-server.packages.${pkgs.stdenv.hostPlatform.system}.default
+ #   inputs.b123d-server.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
   programs.bash.enable = true;

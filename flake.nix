@@ -173,6 +173,7 @@
             laptop = mkNixosHost "laptop" "dispe";
             work-desktop = mkNixosHost "work-desktop" "dispe";
             desktop = mkNixosHost "desktop" "dispe";
+            home-server = mkNixosHost "home-server" "dispe";
             android = mkAndroidHost "phone" "dispe";
           };
 
