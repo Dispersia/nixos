@@ -9,6 +9,7 @@
   imports = [
     ../../modules/system.nix
     ../../modules/nordvpn.nix
+    ../../modules/tailscale.nix
 
     ./hardware-configuration.nix
   ];
@@ -37,6 +38,13 @@
     settings = {
       PasswordAuthentication = true;
       PermitRootLogin = "no";
+    };
+  };
+
+  services.komga = {
+    enable = true;
+    settings = {
+      server.port = 25500;
     };
   };
 
