@@ -44,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   # Add support for .sit archive using unar
-  preUnpack = lib.optionalString stdenv.isDarwin ''
+  preUnpack = lib.optionalString stdenv.hostPlatform.isDarwin ''
     _tryUnar() {
       if ! [[ "$curSrc" =~ \.sit$ ]]; then return 1; fi
       ${lib.getExe unar} "$curSrc"
@@ -56,7 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
   dontBuild = true;
 
   # Stripping breaks the binary on Darwin (code signing issues)
-  dontStrip = stdenv.isDarwin;
+  dontStrip = stdenv.hostPlatform.isDarwin;
 
   # (on Linux only) X11/Wayland/sound/font libs are GUI-only backends in the bundled JBR;
   # the LSP server itself runs headless so these are safe to ignore.
@@ -74,8 +74,8 @@ stdenv.mkDerivation (finalAttrs: {
     "libxkbcommon.so.0"
   ];
   nativeBuildInputs = (
-    lib.optionals stdenv.isLinux [ autoPatchelfHook ]
-    ++ lib.optionals stdenv.isDarwin [
+    lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
       fixDarwinDylibNames
       unar
       darwin.autoSignDarwinBinariesHook

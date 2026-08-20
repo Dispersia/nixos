@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   hostName,
   ...
@@ -7,7 +8,6 @@
 {
   imports = [
     ../../modules/system.nix
-    ../../modules/tailscale.nix
 
     ./hardware-configuration.nix
   ];
@@ -28,6 +28,11 @@
   };
 
   services.xserver.videoDrivers = [ "nvidia" ];
+
+  services.displayManager.sddm = {
+    enable = lib.mkForce true;
+    wayland.enable = true;
+  };
 
   environment.sessionVariables = {
     GBM_BACKEND = "nvidia-drm";
