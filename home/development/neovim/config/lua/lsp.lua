@@ -1,5 +1,6 @@
 vim.lsp.enable({
   "arduino",
+  "astro",
   "bicep",
   "cplusplus",
   "dart",
