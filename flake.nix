@@ -30,7 +30,12 @@
   };
 
   outputs =
-    inputs@{ flake-parts, nixpkgs, home-manager, ... }:
+    inputs@{
+      flake-parts,
+      nixpkgs,
+      home-manager,
+      ...
+    }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [
         "x86_64-linux"
@@ -53,6 +58,22 @@
 
       flake =
         let
+          bravePolicies = {
+            environment.etc."brave/policies/managed/brave-default-search.json".text = ''
+              {
+                "DefaultSearchProviderEnabled": true,
+                "DefaultSearchProviderName": "Google",
+                "DefaultSearchProviderSearchURL": "https://www.google.com/search?q={searchTerms}"
+              }
+            '';
+
+            environment.etc."brave/policies/managed/brave-url-blocklist.json".text = ''
+              {
+                "URLBlocklist": ["reddit.com"]
+              }
+            '';
+          };
+
           mkNixosHost =
             hostName: username:
             nixpkgs.lib.nixosSystem {
@@ -80,18 +101,7 @@
                     };
                   home-manager.extraSpecialArgs = { inherit inputs hostName username; };
                 }
-                (
-                  { pkgs, ... }:
-                  {
-                    environment.etc."brave/policies/managed/brave-default-search.json".text = ''
-                      {
-                        "DefaultSearchProviderEnabled": true,
-                        "DefaultSearchProviderName": "Google",
-                        "DefaultSearchProviderSearchURL": "https://www.google.com/search?q={searchTerms}"
-                      }
-                    '';
-                  }
-                )
+                bravePolicies
               ];
             };
           mkAndroidHost =
@@ -121,18 +131,7 @@
                     };
                   home-manager.extraSpecialArgs = { inherit inputs hostName username; };
                 }
-                (
-                  { pkgs, ... }:
-                  {
-                    environment.etc."brave/policies/managed/brave-default-search.json".text = ''
-                      {
-                        "DefaultSearchProviderEnabled": true,
-                        "DefaultSearchProviderName": "Google",
-                        "DefaultSearchProviderSearchURL": "https://www.google.com/search?q={searchTerms}"
-                      }
-                    '';
-                  }
-                )
+                bravePolicies
               ];
             };
 

@@ -7,7 +7,10 @@
 let
   brave = pkgs.brave // {
     override =
-      { commandLineArgs ? "", ... }:
+      {
+        commandLineArgs ? "",
+        ...
+      }:
       pkgs.brave.overrideAttrs (old: {
         preFixup = (old.preFixup or "") + ''
           gappsWrapperArgs+=(--add-flags ${lib.escapeShellArg commandLineArgs})
@@ -27,6 +30,7 @@ in
       { id = "gebbhagfogifgggkldgodflihgfeippi"; } # Return Youtube Dislike
       { id = "ldmgbgaoglmaiblpnphffibpbfchjaeg"; } # New TongWenTang
       { id = "khncfooichmfjbepaaaebmommgaepoid"; } # Unhook
+      { id = "eiimnmioipafcokbfikbljfdeojpcgbh"; } # BlockSite
     ];
     commandLineArgs = [
       "--password-store=basic"
