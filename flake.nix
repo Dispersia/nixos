@@ -69,7 +69,7 @@
 
             environment.etc."brave/policies/managed/brave-url-blocklist.json".text = ''
               {
-                "URLBlocklist": ["reddit.com"]
+                "URLBlocklist": ["reddit.com", "youtube.com/shorts"]
               }
             '';
           };
