@@ -31,6 +31,7 @@ in
       { id = "ldmgbgaoglmaiblpnphffibpbfchjaeg"; } # New TongWenTang
       { id = "khncfooichmfjbepaaaebmommgaepoid"; } # Unhook
       { id = "eiimnmioipafcokbfikbljfdeojpcgbh"; } # BlockSite
+      { id = "jnnihcnhddahioablihllmfgilcffppc"; } # Gemini Blocker
     ];
     commandLineArgs = [
       "--password-store=basic"
