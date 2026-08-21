@@ -1,7 +1,8 @@
 {
   config,
-  pkgs,
   hostName,
+  lib,
+  pkgs,
   ...
 }:
 {
@@ -15,6 +16,11 @@
   boot.loader = {
     systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
+  };
+
+  services.displayManager.sddm = {
+    enable = lib.mkForce true;
+    wayland.enable = true;
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
