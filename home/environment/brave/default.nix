@@ -26,6 +26,7 @@ in
       { id = "dhdgffkkebhmkfjojejmpbldmpobfkfo"; } # Tampermonkey
       { id = "gebbhagfogifgggkldgodflihgfeippi"; } # Return Youtube Dislike
       { id = "ldmgbgaoglmaiblpnphffibpbfchjaeg"; } # New TongWenTang
+      { id = "khncfooichmfjbepaaaebmommgaepoid"; } # Unhook
     ];
     commandLineArgs = [
       "--password-store=basic"
