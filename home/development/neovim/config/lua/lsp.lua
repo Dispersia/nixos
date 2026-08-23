@@ -13,6 +13,7 @@ vim.lsp.enable({
   "python",
   "roslyn",
   "rust_analyzer",
+  "slang",
   "slint",
   "terraform",
   "ts_ls",
