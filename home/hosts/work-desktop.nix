@@ -9,5 +9,8 @@
     ../linux.nix
   ];
 
-  home.packages = [ pkgs.nodejs ];
+  home.packages = [
+    pkgs.nodejs
+    pkgs.azure-cli
+  ];
 }
