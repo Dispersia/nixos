@@ -42,6 +42,10 @@
   networking.hostName = hostName;
   networking.networkmanager.enable = true;
 
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{bDeviceClass}=="09", ATTR{power/wakeup}="enabled"
+  '';
+
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
