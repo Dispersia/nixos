@@ -1,6 +1,6 @@
 { pkgs, config, ... }:
 {
   home.packages = [
-    pkgs.claude-code
+    pkgs.opencode
   ];
 }

@@ -4,6 +4,7 @@
     ./claude
     ./git
     ./neovim
+    ./opencode
   ];
 
   home.packages = [
