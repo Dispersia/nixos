@@ -9,6 +9,8 @@
 
   home.packages = [
     (pkgs.callPackage ./kotlin-lsp.nix { })
+    pkgs.bun
     pkgs.kubectl
+    pkgs.nodejs
   ];
 }

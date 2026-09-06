@@ -10,7 +10,6 @@
   ];
 
   home.packages = [
-    pkgs.nodejs
     pkgs.azure-cli
   ];
 }
