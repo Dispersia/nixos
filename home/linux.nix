@@ -10,6 +10,7 @@
     ./development/bambu-studio
     ./development/blender
     ./development/kicad
+    ./development/lmms
     ./development/postman
     ./development/unityhub
     ./development/vscode
