@@ -13,5 +13,6 @@ in
       ];
     }))
     stable.carla
+    pkgs.soundfont-fluid
   ];
 }

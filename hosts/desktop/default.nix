@@ -10,6 +10,7 @@
     ../../modules/system.nix
     ../../modules/nordvpn.nix
     ../../modules/tailscale.nix
+    ../../modules/printing.nix
 
     ./hardware-configuration.nix
   ];
