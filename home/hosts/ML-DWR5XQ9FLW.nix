@@ -1,7 +1,10 @@
 { ... }:
 {
   imports = [
-    ../common.nix
+    ../cli
+
     ../development/claude
+
+    ../environment/gpg
   ];
 }

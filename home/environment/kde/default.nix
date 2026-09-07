@@ -50,6 +50,7 @@
   home.packages = with pkgs; [
     kdePackages.breeze-icons
     kdePackages.kde-gtk-config
+    wl-clipboard
   ];
 
   home.sessionVariables = {

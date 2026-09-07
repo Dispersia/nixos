@@ -1,33 +1,22 @@
-{ pkgs, ... }:
+{ ... }:
 {
   imports = [
-    ../common.nix
+    ../cli
+
     ../development/git
     ../development/neovim
+
     ../environment/alacritty
     ../environment/brave
+    ../environment/gpg
+    ../environment/gtk
     ../environment/kde
     ../environment/yazi
     ../environment/zellij
-    ../shell
+
+    ../shell/carapace
+    ../shell/direnv
+    ../shell/nushell
+    ../shell/starship
   ];
-
-  gtk = {
-    enable = true;
-    theme = {
-      name = "Adwaita-dark";
-      package = pkgs.gnome-themes-extra;
-    };
-  };
-
-  home.packages = with pkgs; [
-    wl-clipboard
-  ];
-
-  services.gpg-agent = {
-    enable = true;
-
-    defaultCacheTtl = 3600;
-    pinentry.package = pkgs.pinentry-qt;
-  };
 }

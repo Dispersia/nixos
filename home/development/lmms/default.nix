@@ -4,7 +4,14 @@ let
 in
 {
   home.packages = [
-    (pkgs.lmms.override { carla = stable.carla; })
+    ((pkgs.lmms.override { carla = stable.carla; }).overrideAttrs (old: {
+      nativeBuildInputs = old.nativeBuildInputs ++ [
+        pkgs.fltk
+        pkgs.perl
+        pkgs.perlPackages.ListMoreUtils
+        pkgs.perlPackages.XMLParser
+      ];
+    }))
     stable.carla
   ];
 }

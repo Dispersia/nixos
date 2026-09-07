@@ -1,9 +1,4 @@
-{
-  pkgs,
-  config,
-  inputs,
-  ...
-}:
+{ pkgs, ... }:
 {
   home.packages = with pkgs; [
     vim
@@ -32,16 +27,7 @@
     gh
 
     unrar
-
-    #inputs.b123d-server.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
   programs.bash.enable = true;
-
-  programs.gpg = {
-    enable = true;
-
-    mutableKeys = true;
-    mutableTrust = true;
-  };
 }

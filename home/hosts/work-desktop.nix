@@ -1,15 +1,46 @@
 { pkgs, ... }:
 {
   imports = [
-    ../common.nix
-    ../development
+    ../cli
+
+    ../development/android
+    ../development/arduino
+    ../development/bambu-studio
+    ../development/blender
     ../development/claude
-    ../environment
-    ../shell
-    ../linux.nix
+    ../development/git
+    ../development/kicad
+    ../development/kotlin-lsp
+    ../development/kubectl
+    ../development/lmms
+    ../development/neovim
+    ../development/node
+    ../development/opencode
+    ../development/podman
+    ../development/postgresql
+    ../development/postman
+    ../development/unityhub
+    ../development/vscode
+
+    ../environment/alacritty
+    ../environment/brave
+    ../environment/fcitx5
+    ../environment/gpg
+    ../environment/gtk
+    ../environment/kde
+    ../environment/qbittorrent
+    ../environment/yazi
+    ../environment/zellij
+
+    ../language/anki
+
+    ../shell/carapace
+    ../shell/direnv
+    ../shell/nushell
+    ../shell/starship
+
+    ../gaming
   ];
 
-  home.packages = [
-    pkgs.azure-cli
-  ];
+  home.packages = [ pkgs.azure-cli ];
 }
