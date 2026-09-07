@@ -102,6 +102,11 @@ in
 
   virtualisation.docker.enable = true;
 
+  zramSwap = {
+    enable = true;
+    memoryPercent = 50;
+  };
+
   nix.settings.trusted-users = [ username ];
 
   nix.settings = {
