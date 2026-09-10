@@ -2,6 +2,7 @@
 {
   imports = [
     ./xivlauncher
+    ./heroic
   ];
 
   home.packages = with pkgs; [
