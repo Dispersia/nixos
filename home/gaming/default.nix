@@ -1,5 +1,9 @@
 { pkgs, ... }:
 {
+  imports = [
+    ./xivlauncher
+  ];
+
   home.packages = with pkgs; [
     protonup-qt
     mangohud
