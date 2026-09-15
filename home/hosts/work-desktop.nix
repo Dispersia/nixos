@@ -12,7 +12,6 @@
     ../development/kicad
     ../development/kotlin-lsp
     ../development/kubectl
-    ../development/lmms
     ../development/neovim
     ../development/node
     ../development/opencode

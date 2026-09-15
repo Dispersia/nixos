@@ -40,6 +40,7 @@ in
   };
 
   xdg.dataFile."applications/mimeapps.list".force = true;
+  xdg.configFile."mimeapps.list".force = true;
 
   xdg.mimeApps = {
     enable = true;
@@ -47,6 +48,10 @@ in
       "x-scheme-handler/http" = "brave-browser.desktop";
       "x-scheme-handler/https" = "brave-browser.desktop";
       "text/html" = "brave-browser.desktop";
+      "x-scheme-handler/postman" = "Postman.desktop";
+    };
+    associations.added = {
+      "x-scheme-handler/postman" = "Postman.desktop";
     };
   };
 }
