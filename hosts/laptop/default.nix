@@ -8,7 +8,6 @@
 {
   imports = [
     ../../modules/system.nix
-    ../../modules/nordvpn.nix
     ../../modules/printing.nix
 
     ./hardware-configuration.nix

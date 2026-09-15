@@ -1,6 +1,6 @@
-{ pkgs, config, ... }:
+{ pkgs, inputs, ... }:
 {
   home.packages = [
-    pkgs.opencode
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode2
   ];
 }
