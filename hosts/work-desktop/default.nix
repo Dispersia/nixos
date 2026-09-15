@@ -8,6 +8,7 @@
 {
   imports = [
     ../../modules/system.nix
+    ../../modules/tailscale.nix
 
     ./hardware-configuration.nix
   ];
