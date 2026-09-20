@@ -13,7 +13,11 @@ let
       }:
       pkgs.brave.overrideAttrs (old: {
         preFixup = (old.preFixup or "") + ''
-          gappsWrapperArgs+=(--add-flags ${lib.escapeShellArg commandLineArgs})
+          gappsWrapperArgs+=(
+            --add-flags ${lib.escapeShellArg commandLineArgs}
+            --prefix LD_LIBRARY_PATH : ${pkgs.vulkan-loader}/lib
+            --prefix XDG_DATA_DIRS : /run/opengl-driver/share
+          )
         '';
       });
   };

@@ -1,5 +1,10 @@
 { ... }:
 {
+  programs.chromium.commandLineArgs = [
+    "--enable-unsafe-webgpu"
+    "--enable-features=AcceleratedVideoDecodeLinuxGL,AcceleratedVideoEncoder,WaylandWindowDecorations,Vulkan"
+  ];
+
   imports = [
     ../cli
 
@@ -16,7 +21,6 @@
     ../development/neovim
     ../development/node
     ../development/opencode
-    ../development/podman
     ../development/postgresql
     ../development/postman
     ../development/unityhub

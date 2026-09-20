@@ -15,7 +15,6 @@
     ../development/neovim
     ../development/node
     ../development/opencode
-    ../development/podman
     ../development/postgresql
     ../development/postman
     ../development/unityhub
