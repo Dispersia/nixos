@@ -140,10 +140,10 @@
             };
 
           mkDarwinHost =
-            hostName: username:
+            hostName: username: file:
             inputs.nix-darwin.lib.darwinSystem {
               system = "aarch64-darwin";
-              specialArgs = { inherit inputs hostName username; };
+              specialArgs = { inherit inputs hostName username file; };
               modules = [
                 ./hosts/${hostName}
 
@@ -153,7 +153,7 @@
                   home-manager.useUserPackages = true;
 
                   home-manager.users.${username} = {
-                    imports = [ ./users/${username}/home.nix ];
+                    imports = [ ./users/${file}/home.nix ];
                   };
 
                   home-manager.extraSpecialArgs = { inherit inputs hostName username; };
@@ -181,7 +181,8 @@
           };
 
           darwinConfigurations = {
-            ML-DWR5XQ9FLW = mkDarwinHost "ML-DWR5XQ9FLW" "AHoush";
+            ML-DWR5XQ9FLW = mkDarwinHost "ML-DWR5XQ9FLW" "AHoush" "AHoush";
+	    Aarons-Mac-Mini = mkDarwinHost "Aarons-Mac-Mini" "dispe" "dispe-mac";
           };
         };
     };
