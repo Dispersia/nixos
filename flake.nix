@@ -31,6 +31,11 @@
     };
 
     llm-agents.url = "github:numtide/llm-agents.nix";
+
+    obsidian-extensions = {
+      url = "github:karaolidis/nix-obsidian-extensions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
