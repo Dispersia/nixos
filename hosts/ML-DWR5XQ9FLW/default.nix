@@ -10,7 +10,12 @@
     ../../modules/darwin-system.nix
   ];
 
-  users.users.${username}.home = "/Users/${username}";
+  users.knownUsers = [ "${username}" ];
+  users.users.${username} = {
+    home = "/Users/${username}";
+    uid = 504;
+    shell = pkgs.nushell;
+  };
 
   system.primaryUser = username;
 
