@@ -5,7 +5,8 @@
   ...
 }:
 let
-  brave = pkgs.brave // {
+  brave = if pkgs.stdenv.hostPlatform.isLinux then
+   pkgs.brave // {
     override =
       {
         commandLineArgs ? "",
@@ -20,7 +21,9 @@ let
           )
         '';
       });
-  };
+  }
+ else
+    pkgs.brave;
 in
 {
   programs.chromium = {
@@ -43,10 +46,11 @@ in
     ];
   };
 
-  xdg.dataFile."applications/mimeapps.list".force = true;
-  xdg.configFile."mimeapps.list".force = true;
+  xdg = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
+    dataFile."applications/mimeapps.list".force = true;
+    configFile."mimeapps.list".force = true;
 
-  xdg.mimeApps = {
+    mimeApps = {
     enable = true;
     defaultApplications = {
       "x-scheme-handler/http" = "brave-browser.desktop";
@@ -58,4 +62,5 @@ in
       "x-scheme-handler/postman" = "Postman.desktop";
     };
   };
+};
 }

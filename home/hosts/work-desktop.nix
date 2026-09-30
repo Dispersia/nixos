@@ -5,7 +5,6 @@
 
     ../development/android
     ../development/arduino
-    ../development/bambu-studio
     ../development/blender
     ../development/claude
     ../development/git
@@ -17,7 +16,6 @@
     ../development/opencode
     ../development/postgresql
     ../development/postman
-    ../development/unityhub
     ../development/vscode
 
     ../environment/alacritty
@@ -26,7 +24,7 @@
     ../environment/gpg
     ../environment/gtk
     ../environment/kde
-    ../environment/qbittorrent
+    ../environment/obsidian
     ../environment/yazi
     ../environment/zellij
 

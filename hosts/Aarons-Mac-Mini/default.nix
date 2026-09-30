@@ -13,7 +13,7 @@
   users.knownUsers = [ "${username}" ];
   users.users.${username} = {
     home = "/Users/${username}";
-    uid = 504;
+    uid = 501;
     shell = pkgs.nushell;
   };
 

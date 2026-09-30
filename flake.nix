@@ -36,6 +36,11 @@
       url = "github:nlewo/comin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    obsidian-extensions = {
+      url = "github:karaolidis/nix-obsidian-extensions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -113,6 +118,16 @@
                 bravePolicies
               ];
             };
+          # Headless server hosts: no home-manager, no desktop/brave policies.
+          mkServerHost =
+            hostName: username:
+            nixpkgs.lib.nixosSystem {
+              system = "x86_64-linux";
+              specialArgs = { inherit inputs hostName username; };
+              modules = [
+                ./hosts/${hostName}
+              ];
+            };
           mkAndroidHost =
             hostName: username:
             nixpkgs.lib.nixosSystem {
@@ -145,10 +160,17 @@
             };
 
           mkDarwinHost =
-            hostName: username:
+            hostName: username: file:
             inputs.nix-darwin.lib.darwinSystem {
               system = "aarch64-darwin";
-              specialArgs = { inherit inputs hostName username; };
+              specialArgs = {
+                inherit
+                  inputs
+                  hostName
+                  username
+                  file
+                  ;
+              };
               modules = [
                 ./hosts/${hostName}
 
@@ -158,7 +180,7 @@
                   home-manager.useUserPackages = true;
 
                   home-manager.users.${username} = {
-                    imports = [ ./users/${username}/home.nix ];
+                    imports = [ ./users/${file}/home.nix ];
                   };
 
                   home-manager.extraSpecialArgs = { inherit inputs hostName username; };
@@ -181,12 +203,13 @@
             laptop = mkNixosHost "laptop" "dispe";
             work-desktop = mkNixosHost "work-desktop" "dispe";
             desktop = mkNixosHost "desktop" "dispe";
-            home-server = mkNixosHost "home-server" "dispe";
+            home-server = mkServerHost "home-server" "dispe";
             android = mkAndroidHost "phone" "dispe";
           };
 
           darwinConfigurations = {
-            ML-DWR5XQ9FLW = mkDarwinHost "ML-DWR5XQ9FLW" "AHoush";
+            ML-DWR5XQ9FLW = mkDarwinHost "ML-DWR5XQ9FLW" "AHoush" "AHoush";
+            Aarons-Mac-Mini = mkDarwinHost "Aarons-Mac-Mini" "dispe" "dispe-mac";
           };
         };
     };

@@ -1,4 +1,5 @@
 {
+  inputs,
   pkgs,
   lib,
   hostName,
@@ -129,6 +130,7 @@ in
   };
 
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.overlays = [ inputs.obsidian-extensions.overlays.default ];
 
   i18n.defaultLocale = "en_US.UTF-8";
 
