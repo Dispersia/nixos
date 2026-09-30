@@ -31,6 +31,11 @@
     };
 
     llm-agents.url = "github:numtide/llm-agents.nix";
+
+    comin = {
+      url = "github:nlewo/comin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

@@ -8,6 +8,7 @@
 {
   imports = [
     ../../modules/system.nix
+    ../../modules/comin.nix
     ../../modules/nordvpn.nix
     ../../modules/tailscale.nix
 
