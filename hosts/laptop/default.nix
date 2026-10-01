@@ -8,6 +8,7 @@
 {
   imports = [
     ../../modules/system.nix
+    ../../modules/comin.nix
     ../../modules/printing.nix
 
     ./hardware-configuration.nix
