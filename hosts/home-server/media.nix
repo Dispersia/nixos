@@ -24,6 +24,13 @@ in
 
   users.users.jellyfin.extraGroups = [ "media" ];
 
+  # The Synology NFS server only evaluates a request's primary group, not its
+  # supplementary groups. Every media-stack service therefore uses `media` as
+  # its primary group. Jellyfin must too, otherwise it cannot read the files
+  # SABnzbd/Sonarr create with mode 0660 (group `media`) and playback fails
+  # with "Permission denied".
+  services.jellyfin.group = "media";
+
   systemd.services.media-directories = {
     description = "Create media library directories";
 
@@ -42,7 +49,7 @@ in
   };
 
   systemd.services.media-permissions = {
-    description = "Fix media library group permissions";
+    description = "Fix media library permissions";
 
     wantedBy = [ "multi-user.target" ];
 
@@ -54,7 +61,7 @@ in
 
     unitConfig = {
       RequiresMountsFor = [ mediaRoot ];
-      ConditionPathExists = "!/var/lib/media-permissions-fixed-v2";
+      ConditionPathExists = "!/var/lib/media-permissions-fixed-v3";
     };
 
     serviceConfig = {
@@ -65,8 +72,9 @@ in
     script = ''
       ${pkgs.coreutils}/bin/chgrp -R media ${lib.escapeShellArgs permissionDirs}
       ${pkgs.coreutils}/bin/chmod -R g+rwX ${lib.escapeShellArgs permissionDirs}
+      ${pkgs.coreutils}/bin/chmod -R o+rX ${lib.escapeShellArgs permissionDirs}
       ${pkgs.findutils}/bin/find ${lib.escapeShellArgs permissionDirs} -type d -exec ${pkgs.coreutils}/bin/chmod g+s {} +
-      ${pkgs.coreutils}/bin/touch /var/lib/media-permissions-fixed-v2
+      ${pkgs.coreutils}/bin/touch /var/lib/media-permissions-fixed-v3
     '';
   };
 
