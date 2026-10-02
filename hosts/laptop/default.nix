@@ -10,6 +10,7 @@
     ../../modules/system.nix
     ../../modules/comin.nix
     ../../modules/printing.nix
+    ../../modules/tailscale.nix
 
     ./hardware-configuration.nix
   ];

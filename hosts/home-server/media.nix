@@ -20,7 +20,7 @@ in
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = "${pkgs.coreutils}/bin/install -d -o root -g media -m 0775 ${mediaRoot}/manhua ${downloadsRoot}";
+      ExecStart = "${pkgs.coreutils}/bin/install -d -o root -g media -m 0775 ${mediaRoot}/manhua ${mediaRoot}/manhwa ${downloadsRoot}";
     };
   };
 

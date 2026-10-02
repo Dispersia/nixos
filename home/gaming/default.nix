@@ -7,8 +7,6 @@
 
   home.packages = with pkgs; [
     protonup-qt
-    mangohud
-    goverlay
 
     (symlinkJoin {
       name = "discord";
