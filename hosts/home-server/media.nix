@@ -4,6 +4,7 @@ let
   mediaRoot = "/mnt/media";
   downloadsRoot = "${mediaRoot}/downloads";
   mediaDirs = [
+    mediaRoot
     "${mediaRoot}/shows"
     "${mediaRoot}/movies"
     "${mediaRoot}/manga"
