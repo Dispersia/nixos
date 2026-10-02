@@ -54,7 +54,6 @@
     };
   };
 
-  # Tailscale subnet router for the Nomad/Consul internal network.
   services.tailscale = {
     useRoutingFeatures = "server";
     extraSetFlags = [ "--advertise-routes=10.50.0.0/24" ];

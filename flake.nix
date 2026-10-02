@@ -118,7 +118,6 @@
                 bravePolicies
               ];
             };
-          # Headless server hosts: no home-manager, no desktop/brave policies.
           mkServerHost =
             hostName: username:
             nixpkgs.lib.nixosSystem {

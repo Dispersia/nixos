@@ -1,0 +1,9 @@
+# Base install for yomifin-ocr. OCR engines are optional extras.
+#
+#   pip install -r requirements.txt
+#   pip install ".[yomitoku]"    # preferred Japanese engine
+#   pip install ".[paddleocr]"   # multilingual default/fallback
+#   pip install ".[mangaocr]"    # optional compatibility engine
+fastapi>=0.110
+uvicorn[standard]>=0.27
+pillow>=10.0

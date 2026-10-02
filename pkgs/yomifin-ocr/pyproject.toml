@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yomifin-ocr"
+version = "0.1.0"
+description = "OCR HTTP sidecar for the YomiFin Jellyfin plugin (comic/manga pages)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "YomiFin contributors" }]
+keywords = ["ocr", "manga", "jellyfin", "yomitoku", "paddleocr"]
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "pillow>=10.0",
+]
+
+[project.optional-dependencies]
+# Preferred Japanese engine.
+yomitoku = ["yomitoku>=0.1"]
+# Multilingual default / fallback.
+paddleocr = ["paddleocr>=2.7", "paddlepaddle>=2.6"]
+# Optional compatibility engine (not the primary Japanese engine).
+mangaocr = ["manga-ocr>=0.1.9"]
+# Test/lint tooling.
+dev = ["pytest>=8.0", "httpx>=0.27"]
+
+[tool.setuptools]
+packages = ["providers", "service"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -43,7 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = archiveHash;
   };
 
-  # Add support for .sit archive using unar
   preUnpack = lib.optionalString stdenv.hostPlatform.isDarwin ''
     _tryUnar() {
       if ! [[ "$curSrc" =~ \.sit$ ]]; then return 1; fi
@@ -55,11 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
   dontConfigure = true;
   dontBuild = true;
 
-  # Stripping breaks the binary on Darwin (code signing issues)
   dontStrip = stdenv.hostPlatform.isDarwin;
 
-  # (on Linux only) X11/Wayland/sound/font libs are GUI-only backends in the bundled JBR;
-  # the LSP server itself runs headless so these are safe to ignore.
   autoPatchelfIgnoreMissingDeps = [
     "libasound.so.2"
     "libc.musl-x86_64.so.1"
@@ -83,9 +79,7 @@ stdenv.mkDerivation (finalAttrs: {
   );
 
   buildInputs = [
-    # for native JNI libs (rocksdbjni, filewatcher),
-    stdenv.cc.cc.lib # libgcc_s.so.1, libstdc++.so.6
-    # for the bundled JBR (libjli, libzip, libinstrument, etc.)
+    stdenv.cc.cc.lib
     zlib
   ];
 
@@ -124,7 +118,6 @@ stdenv.mkDerivation (finalAttrs: {
     ];
     license = with lib.licenses; [
       asl20
-      # NOTE: @2026-04 the LSP source code is not public
       unfreeRedistributable
     ];
     platforms = lib.platforms.darwin ++ [
