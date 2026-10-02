@@ -33,7 +33,7 @@ let
         rm -rf "$VENV_DIR"
         uv venv --python ${lib.escapeShellArg "${cfg.python}/bin/python3"} "$VENV_DIR"
         if [ -n "$EXTRAS" ]; then
-          uv pip install --python "$VENV_DIR/bin/python" "$SOURCE[$EXTRAS]"
+          uv pip install --python "$VENV_DIR/bin/python" "''${SOURCE}[$EXTRAS]"
         else
           uv pip install --python "$VENV_DIR/bin/python" "$SOURCE"
         fi
