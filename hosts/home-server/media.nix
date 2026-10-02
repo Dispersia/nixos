@@ -3,9 +3,24 @@
 let
   mediaRoot = "/mnt/media";
   downloadsRoot = "${mediaRoot}/downloads";
+  mediaDirs = [
+    "${mediaRoot}/shows"
+    "${mediaRoot}/movies"
+    "${mediaRoot}/manga"
+    "${mediaRoot}/manhua"
+    "${mediaRoot}/manhwa"
+    downloadsRoot
+  ];
+  libraryDirs = [
+    "${mediaRoot}/shows"
+    "${mediaRoot}/movies"
+    "${mediaRoot}/manga"
+  ];
 in
 {
   users.groups.media.gid = 2000;
+
+  users.users.jellyfin.extraGroups = [ "media" ];
 
   systemd.services.media-directories = {
     description = "Create media library directories";
@@ -20,8 +35,37 @@ in
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = "${pkgs.coreutils}/bin/install -d -o root -g media -m 0775 ${mediaRoot}/manhua ${mediaRoot}/manhwa ${downloadsRoot}";
+      ExecStart = "${pkgs.coreutils}/bin/install -d -o root -g media -m 2775 ${lib.escapeShellArgs mediaDirs}";
     };
+  };
+
+  systemd.services.media-permissions = {
+    description = "Fix media library group permissions";
+
+    wantedBy = [ "multi-user.target" ];
+
+    after = [
+      "mnt-media.automount"
+      "media-directories.service"
+    ];
+    requires = [ "media-directories.service" ];
+
+    unitConfig = {
+      RequiresMountsFor = [ mediaRoot ];
+      ConditionPathExists = "!/var/lib/media-permissions-fixed";
+    };
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+
+    script = ''
+      ${pkgs.coreutils}/bin/chgrp -R media ${lib.escapeShellArgs libraryDirs}
+      ${pkgs.coreutils}/bin/chmod -R g+rwX ${lib.escapeShellArgs libraryDirs}
+      ${pkgs.findutils}/bin/find ${lib.escapeShellArgs libraryDirs} -type d -exec ${pkgs.coreutils}/bin/chmod g+s {} +
+      ${pkgs.coreutils}/bin/touch /var/lib/media-permissions-fixed
+    '';
   };
 
   systemd.services.sonarr.serviceConfig.UMask = lib.mkForce "0002";
