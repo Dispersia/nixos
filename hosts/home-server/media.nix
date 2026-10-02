@@ -17,6 +17,7 @@ let
     "${mediaRoot}/movies"
     "${mediaRoot}/manga"
   ];
+  permissionDirs = libraryDirs ++ [ downloadsRoot ];
 in
 {
   users.groups.media.gid = 2000;
@@ -53,7 +54,7 @@ in
 
     unitConfig = {
       RequiresMountsFor = [ mediaRoot ];
-      ConditionPathExists = "!/var/lib/media-permissions-fixed";
+      ConditionPathExists = "!/var/lib/media-permissions-fixed-v2";
     };
 
     serviceConfig = {
@@ -62,10 +63,10 @@ in
     };
 
     script = ''
-      ${pkgs.coreutils}/bin/chgrp -R media ${lib.escapeShellArgs libraryDirs}
-      ${pkgs.coreutils}/bin/chmod -R g+rwX ${lib.escapeShellArgs libraryDirs}
-      ${pkgs.findutils}/bin/find ${lib.escapeShellArgs libraryDirs} -type d -exec ${pkgs.coreutils}/bin/chmod g+s {} +
-      ${pkgs.coreutils}/bin/touch /var/lib/media-permissions-fixed
+      ${pkgs.coreutils}/bin/chgrp -R media ${lib.escapeShellArgs permissionDirs}
+      ${pkgs.coreutils}/bin/chmod -R g+rwX ${lib.escapeShellArgs permissionDirs}
+      ${pkgs.findutils}/bin/find ${lib.escapeShellArgs permissionDirs} -type d -exec ${pkgs.coreutils}/bin/chmod g+s {} +
+      ${pkgs.coreutils}/bin/touch /var/lib/media-permissions-fixed-v2
     '';
   };
 
@@ -126,6 +127,7 @@ in
       inet_exposure = "api+web (locally no auth)";
       download_dir = "/var/lib/sabnzbd/downloads";
       complete_dir = "/mnt/media/downloads";
+      permissions = "775";
     };
   };
 
