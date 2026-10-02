@@ -91,6 +91,8 @@ in
     openFirewall = true;
   };
 
+  services.flaresolverr.enable = true;
+
   services.bazarr = {
     enable = true;
     openFirewall = true;
