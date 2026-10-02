@@ -20,24 +20,33 @@ let
       STATE_DIR=${lib.escapeShellArg stateDir}
       VENV_DIR=${lib.escapeShellArg venvDir}
       SOURCE=${lib.escapeShellArg "${cfg.source}"}
+      SRC_DIR="$STATE_DIR/src"
       EXTRAS=${lib.escapeShellArg extras}
       STAMP="$STATE_DIR/.extras"
+      STAMP_VALUE="$EXTRAS|$SOURCE"
 
       export UV_PYTHON_DOWNLOADS=never
       export UV_CACHE_DIR=${lib.escapeShellArg "${home}/Library/Caches/uv"}
 
       mkdir -p "$STATE_DIR"
 
-      if [ ! -x "$VENV_DIR/bin/uvicorn" ] || [ "$(cat "$STAMP" 2>/dev/null || true)" != "$EXTRAS" ]; then
+      if [ ! -x "$VENV_DIR/bin/uvicorn" ] || [ "$(cat "$STAMP" 2>/dev/null || true)" != "$STAMP_VALUE" ]; then
         echo "yomifin-ocr: (re)building venv (extras: $EXTRAS)"
         rm -rf "$VENV_DIR"
+        # The source lives in the read-only Nix store, but setuptools writes
+        # ``*.egg-info`` next to it while building the local package. Install
+        # from a writable copy so that build step can succeed.
+        rm -rf "$SRC_DIR"
+        mkdir -p "$SRC_DIR"
+        cp -R "$SOURCE"/. "$SRC_DIR"/
+        chmod -R u+w "$SRC_DIR"
         uv venv --python ${lib.escapeShellArg "${cfg.python}/bin/python3"} "$VENV_DIR"
         if [ -n "$EXTRAS" ]; then
-          uv pip install --python "$VENV_DIR/bin/python" "''${SOURCE}[$EXTRAS]"
+          uv pip install --python "$VENV_DIR/bin/python" "''${SRC_DIR}[$EXTRAS]"
         else
-          uv pip install --python "$VENV_DIR/bin/python" "$SOURCE"
+          uv pip install --python "$VENV_DIR/bin/python" "$SRC_DIR"
         fi
-        printf '%s' "$EXTRAS" > "$STAMP"
+        printf '%s' "$STAMP_VALUE" > "$STAMP"
       fi
 
       ${optionalString (cfg.authTokenFile != null) ''
