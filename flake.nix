@@ -41,6 +41,11 @@
       url = "github:karaolidis/nix-obsidian-extensions";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    jetpack = {
+      url = "github:anduril/jetpack-nixos/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -128,6 +133,17 @@
                 ./hosts/${hostName}
               ];
             };
+          # NVIDIA Jetson (aarch64) hosts, using jetpack-nixos.
+          mkJetsonHost =
+            hostName: username:
+            nixpkgs.lib.nixosSystem {
+              system = "aarch64-linux";
+              specialArgs = { inherit inputs hostName username; };
+              modules = [
+                ./hosts/${hostName}
+                inputs.jetpack.nixosModules.default
+              ];
+            };
           mkAndroidHost =
             hostName: username:
             nixpkgs.lib.nixosSystem {
@@ -204,6 +220,7 @@
             work-desktop = mkNixosHost "work-desktop" "dispe";
             desktop = mkNixosHost "desktop" "dispe";
             home-server = mkServerHost "home-server" "dispe";
+            home-gpu-server = mkJetsonHost "home-gpu-server" "dispe";
             android = mkAndroidHost "phone" "dispe";
           };
 

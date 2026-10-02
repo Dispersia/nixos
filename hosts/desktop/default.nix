@@ -12,6 +12,7 @@
     ../../modules/nordvpn.nix
     ../../modules/tailscale.nix
     ../../modules/printing.nix
+    ../../modules/diagnostics.nix
 
     ./hardware-configuration.nix
   ];
