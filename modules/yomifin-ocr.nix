@@ -50,7 +50,8 @@ let
       fi
 
       ${optionalString (cfg.authTokenFile != null) ''
-        export YOMIFIN_OCR_TOKEN="$(cat ${lib.escapeShellArg (toString cfg.authTokenFile)})"
+        YOMIFIN_OCR_TOKEN="$(cat ${lib.escapeShellArg cfg.authTokenFile})"
+        export YOMIFIN_OCR_TOKEN
       ''}
 
       exec "$VENV_DIR/bin/uvicorn" service.app:app \
