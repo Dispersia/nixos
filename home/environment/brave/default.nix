@@ -35,7 +35,7 @@ in
       { id = "pnmaklegiibbioifkmfkgpfnmdehdfan"; } # 10ten
       { id = "dhdgffkkebhmkfjojejmpbldmpobfkfo"; } # Tampermonkey
       { id = "gebbhagfogifgggkldgodflihgfeippi"; } # Return Youtube Dislike
-      { id = "ldmgbgaoglmaiblpnphffibpbfchjaeg"; } # New TongWenTang
+      { id = "iokfkfickldinmejhpfcngiocoedkpkh"; } # LingLook
       { id = "khncfooichmfjbepaaaebmommgaepoid"; } # Unhook
       { id = "eiimnmioipafcokbfikbljfdeojpcgbh"; } # BlockSite
       { id = "jnnihcnhddahioablihllmfgilcffppc"; } # Gemini Blocker

@@ -1,12 +1,15 @@
 {
   inputs,
+  hostName,
   ...
 }:
 {
-  imports = [ inputs.comin.nixosModules.comin ];
+  imports = [ inputs.comin.darwinModules.comin ];
 
   services.comin = {
     enable = true;
+
+    hostname = hostName;
 
     remotes = [
       {

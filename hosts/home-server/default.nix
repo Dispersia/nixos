@@ -25,6 +25,19 @@
   networking.hostName = hostName;
   networking.useDHCP = true;
 
+  # Force 192.168.4.50. The eero DHCP reservation for MAC
+  # 84:47:09:8e:c1:96 is not being honored, so pin the address statically.
+  networking.interfaces.eno1 = {
+    useDHCP = false;
+    ipv4.addresses = [
+      {
+        address = "192.168.4.50";
+        prefixLength = 22;
+      }
+    ];
+  };
+  networking.defaultGateway = "192.168.4.1";
+
   nixpkgs.config.allowUnfreePredicate =
     pkg:
     builtins.elem (lib.getName pkg) [
@@ -54,7 +67,6 @@
     };
   };
 
-  # Tailscale subnet router for the Nomad/Consul internal network.
   services.tailscale = {
     useRoutingFeatures = "server";
     extraSetFlags = [ "--advertise-routes=10.50.0.0/24" ];
