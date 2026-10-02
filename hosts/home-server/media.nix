@@ -72,6 +72,7 @@ in
   systemd.services.radarr.serviceConfig.UMask = lib.mkForce "0002";
   systemd.services.bazarr.serviceConfig.UMask = "0002";
   systemd.services.qbittorrent.serviceConfig.UMask = "0002";
+  systemd.services.sabnzbd.serviceConfig.UMask = "0002";
   systemd.services.suwayomi-server.serviceConfig.UMask = "0002";
 
   systemd.services.suwayomi-server.serviceConfig.ExecStartPre = [
@@ -111,6 +112,20 @@ in
     torrentingPort = 6881;
     extraArgs = [ "--confirm-legal-notice" ];
     serverConfig.LegalNotice.Accepted = true;
+  };
+
+  services.sabnzbd = {
+    enable = true;
+    openFirewall = true;
+    group = "media";
+    allowConfigWrite = true;
+    settings.misc = {
+      host = "0.0.0.0";
+      port = 8085;
+      inet_exposure = "api+web (locally no auth)";
+      download_dir = "/var/lib/sabnzbd/downloads";
+      complete_dir = "/mnt/media/downloads";
+    };
   };
 
   services.suwayomi-server = {

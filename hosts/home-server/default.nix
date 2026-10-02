@@ -44,6 +44,7 @@
     builtins.elem (lib.getName pkg) [
       "consul"
       "nomad"
+      "unrar"
     ];
 
   users.users.${username} = {
