@@ -110,12 +110,17 @@ in
     };
 
     authTokenFile = mkOption {
-      type = types.nullOr types.path;
+      type = types.nullOr types.str;
       default = null;
+      example = "/run/secrets/yomifin-ocr-token";
       description = ''
-        File containing a bearer token (exported as YOMIFIN_OCR_TOKEN). Set this
-        whenever `host` is not loopback. The sidecar performs arbitrary expensive
-        compute on uploaded bytes and has no auth when the token is unset.
+        Path (as a string) to a file containing a bearer token, exported as
+        YOMIFIN_OCR_TOKEN. Set this whenever `host` is not loopback. The sidecar
+        performs arbitrary expensive compute on uploaded bytes and has no auth
+        when the token is unset.
+
+        Use a string, not a path literal: a `path` value is copied into the
+        world-readable Nix store, which would leak the secret.
       '';
     };
   };
