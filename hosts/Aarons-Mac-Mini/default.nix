@@ -18,7 +18,7 @@
     # Reachable from the home server over the LAN (en0). Keep this in sync with
     # the Jellyfin YomiFin plugin's OcrSidecarUrl; use a DHCP reservation so it
     # does not drift.
-    host = "192.168.4.37";
+    host = "192.168.4.45";
     authTokenFile = "/Users/dispe/.config/yomifin-ocr/token";
     engines = [
       "yomitoku"
