@@ -74,6 +74,10 @@ in
   systemd.services.qbittorrent.serviceConfig.UMask = "0002";
   systemd.services.suwayomi-server.serviceConfig.UMask = "0002";
 
+  systemd.services.suwayomi-server.serviceConfig.ExecStartPre = [
+    "+${pkgs.coreutils}/bin/install -d -o suwayomi -g media -m 0700 /var/lib/suwayomi-server/.local/share/Tachidesk"
+  ];
+
   services.sonarr = {
     enable = true;
     openFirewall = true;
