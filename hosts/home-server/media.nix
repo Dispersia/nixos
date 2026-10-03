@@ -87,6 +87,16 @@ in
   systemd.services.radarr.serviceConfig.UMask = lib.mkForce "0002";
   systemd.services.bazarr.serviceConfig.UMask = "0002";
   systemd.services.qbittorrent.serviceConfig.UMask = "0002";
+
+  systemd.services.qbittorrent.serviceConfig.LoadCredential = [
+    "webui:/home/dispe/.secrets/qbittorrent-webui.conf"
+  ];
+
+  systemd.services.qbittorrent.preStart = lib.mkAfter ''
+    if [ -n "''${CREDENTIALS_DIRECTORY:-}" ] && [ -f "$CREDENTIALS_DIRECTORY/webui" ]; then
+      cat "$CREDENTIALS_DIRECTORY/webui" >> /var/lib/qBittorrent/qBittorrent/config/qBittorrent.conf
+    fi
+  '';
   systemd.services.sabnzbd.serviceConfig.UMask = "0002";
 
   services.sonarr = {
