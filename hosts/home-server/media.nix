@@ -262,15 +262,16 @@ in
       "radarr"
       "qbittorrent"
       "sabnzbd"
+      "flaresolverr"
     ];
     ports = [
       8080
       8085
+      8191
       8989
       7878
       9696
     ];
-    hostProxyPorts = [ 8191 ];
   };
 
   networking.firewall.allowedTCPPorts = [ 3000 ];
