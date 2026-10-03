@@ -12,6 +12,8 @@ let
     mediaRoot
     "${mediaRoot}/shows"
     "${mediaRoot}/movies"
+    "${mediaRoot}/books"
+    "${mediaRoot}/comics"
     "${mediaRoot}/manga"
     "${mediaRoot}/manhua"
     "${mediaRoot}/manhwa"
@@ -20,6 +22,8 @@ let
   libraryDirs = [
     "${mediaRoot}/shows"
     "${mediaRoot}/movies"
+    "${mediaRoot}/books"
+    "${mediaRoot}/comics"
     "${mediaRoot}/manga"
   ];
   permissionDirs = libraryDirs ++ [ downloadsRoot ];
@@ -66,7 +70,7 @@ in
 
     unitConfig = {
       RequiresMountsFor = [ mediaRoot ];
-      ConditionPathExists = "!/var/lib/media-permissions-fixed-v3";
+      ConditionPathExists = "!/var/lib/media-permissions-fixed-v4";
     };
 
     serviceConfig = {
@@ -79,7 +83,7 @@ in
       ${pkgs.coreutils}/bin/chmod -R g+rwX ${lib.escapeShellArgs permissionDirs}
       ${pkgs.coreutils}/bin/chmod -R o+rX ${lib.escapeShellArgs permissionDirs}
       ${pkgs.findutils}/bin/find ${lib.escapeShellArgs permissionDirs} -type d -exec ${pkgs.coreutils}/bin/chmod g+s {} +
-      ${pkgs.coreutils}/bin/touch /var/lib/media-permissions-fixed-v3
+      ${pkgs.coreutils}/bin/touch /var/lib/media-permissions-fixed-v4
     '';
   };
 
@@ -151,43 +155,88 @@ in
     };
   };
 
-  # bookkeeprr: self-hosted manager for manga, comics, light novels, ebooks and
-  # audiobooks. Runs the official upstream image (which is far newer than
-  # anything packaged) and points it at the existing media share, qBittorrent
-  # and Prowlarr.
+  # librarr: self-hosted book, audiobook and manga search/download manager
+  # ("the missing *arr for books"). Runs the upstream image and points it at
+  # the existing media share, qBittorrent and Prowlarr. Secrets live in
+  # /home/dispe/.secrets/librarr.env and are injected with --env-file so they
+  # never enter the world-readable Nix store.
   virtualisation.podman.enable = true;
 
   systemd.tmpfiles.rules = [
-    "d /var/lib/bookkeeprr 0755 root root -"
-
-    # bookkeeprr hard-codes qBittorrent's save path to
-    # /media/downloads/incomplete and reads it back to import. qBittorrent runs
-    # natively on the host, so the host's /media must resolve to the same media
-    # share that the container mounts at /media.
-    "L+ /media - - - - /mnt/media"
+    # The image runs as uid 1000 (librarr), which maps 1:1 to host uid dispe.
+    # The group is `media` (2000) so imports land on the share writable.
+    "d /var/lib/librarr 0775 1000 2000 -"
   ];
 
-  virtualisation.oci-containers.containers.bookkeeprr = {
-    image = "ghcr.io/paulcsiki/bookkeeprr:latest";
+  virtualisation.oci-containers.containers.librarr = {
+    image = "ghcr.io/jeremiahm37/librarr:latest";
 
     environment = {
       TZ = "America/Phoenix";
-      BOOKKEEPRR_LOG_LEVEL = "info";
+      LIBRARR_PORT = "5050";
+
+      AUTH_USERNAME = "admin";
+
+      # Reach the native *arr services and qBittorrent on the host loopback.
+      PROWLARR_URL = "http://127.0.0.1:9696";
+      QB_URL = "http://127.0.0.1:8080";
+      QB_USER = "dispe";
+
+      # Paths as seen inside the container. The whole media share is mounted at
+      # /media so downloads and the library share one filesystem (hardlink
+      # imports stay on the same device).
+      QB_SAVE_PATH = "/media/downloads";
+      QB_CATEGORY = "librarr";
+      QB_MANGA_SAVE_PATH = "/media/downloads";
+      QB_MANGA_CATEGORY = "manga";
+      INCOMING_DIR = "/media/downloads";
+      EBOOK_DIR = "/media/books";
+      MANGA_DIR = "/media/manga";
     };
 
-    # Share the host network namespace so bookkeeprr can reach the other
-    # services at 127.0.0.1 (qBittorrent, Prowlarr, ...) exactly like the
-    # native *arr services do.
+    # Secrets: AUTH_PASSWORD, API_KEY, TORZNAB_API_KEY, PROWLARR_API_KEY,
+    # QB_PASS.
+    environmentFiles = [ "/home/dispe/.secrets/librarr.env" ];
+
+    # Share the host network namespace so librarr can reach the other services
+    # at 127.0.0.1 exactly like the native *arr services do.
     extraOptions = [ "--network=host" ];
 
+    # uid 1000 = librarr in the image, gid 2000 = media on the host. Synology
+    # NFS only honors the primary group, so librarr must be in `media` as its
+    # primary group to write into the share.
+    user = "1000:2000";
+
     volumes = [
-      "/var/lib/bookkeeprr:/config"
+      "/var/lib/librarr:/data"
       "${mediaRoot}:/media"
     ];
   };
 
-  systemd.services."${config.virtualisation.oci-containers.backend}-bookkeeprr".unitConfig.RequiresMountsFor =
+  systemd.services."${config.virtualisation.oci-containers.backend}-librarr".unitConfig.RequiresMountsFor =
     [ mediaRoot ];
+
+  # Remove the previous bookkeeprr install (container, image and data). The unit
+  # only runs while the old data directory still exists, so it deactivates
+  # itself after the first successful switch.
+  systemd.services.bookkeeprr-cleanup = {
+    description = "Remove leftover bookkeeprr data and image";
+
+    wantedBy = [ "multi-user.target" ];
+
+    unitConfig.ConditionPathExists = "/var/lib/bookkeeprr";
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+
+    script = ''
+      ${pkgs.podman}/bin/podman rm -f bookkeeprr 2>/dev/null || true
+      ${pkgs.coreutils}/bin/rm -rf /var/lib/bookkeeprr
+      ${pkgs.podman}/bin/podman rmi ghcr.io/paulcsiki/bookkeeprr:latest 2>/dev/null || true
+    '';
+  };
 
   # Remove the previous Suwayomi install completely. The unit only runs while
   # the old data directory still exists, so it deactivates itself after the
@@ -243,8 +292,8 @@ in
       seerr = {
         port = 5055;
       };
-      bookkeeprr = {
-        port = 3000;
+      librarr = {
+        port = 5050;
       };
       flaresolverr = {
         port = 8191;
@@ -274,6 +323,6 @@ in
     ];
   };
 
-  networking.firewall.allowedTCPPorts = [ 3000 ];
+  networking.firewall.allowedTCPPorts = [ 5050 ];
   networking.firewall.allowedUDPPorts = [ 6881 ];
 }
