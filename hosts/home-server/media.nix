@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   mediaRoot = "/mnt/media";
@@ -134,33 +134,53 @@ in
     };
   };
 
-  # Suwayomi-Server releases run far ahead of the version packaged in nixpkgs,
-  # so run the official upstream container image instead. The image keeps its
-  # data in $HOME/.local/share/Tachidesk, which we bind-mount from the old
-  # services.suwayomi-server data directory so the existing library, sources,
-  # downloads and database are kept.
-  users.users.suwayomi = {
-    isSystemUser = true;
-    uid = 987;
-    group = "media";
-    home = "/var/lib/suwayomi-server";
-    createHome = false;
-  };
-
+  # bookkeeprr: self-hosted manager for manga, comics, light novels, ebooks and
+  # audiobooks. Runs the official upstream image (which is far newer than
+  # anything packaged) and points it at the existing media share, qBittorrent
+  # and Prowlarr.
   virtualisation.podman.enable = true;
 
   systemd.tmpfiles.rules = [
-    "d /var/lib/suwayomi-server/.local/share/Tachidesk 0700 suwayomi media -"
+    "d /var/lib/bookkeeprr 0755 root root -"
   ];
 
-  virtualisation.oci-containers.containers.suwayomi-server = {
-    image = "ghcr.io/suwayomi/suwayomi-server:stable";
-    user = "987:2000";
-    environment.TZ = "America/Phoenix";
-    ports = [ "4567:4567" ];
+  virtualisation.oci-containers.containers.bookkeeprr = {
+    image = "ghcr.io/paulcsiki/bookkeeprr:latest";
+
+    environment = {
+      TZ = "America/Phoenix";
+      BOOKKEEPRR_LOG_LEVEL = "info";
+    };
+
+    ports = [ "3000:3000" ];
+
     volumes = [
-      "/var/lib/suwayomi-server/.local/share/Tachidesk:/home/suwayomi/.local/share/Tachidesk"
+      "/var/lib/bookkeeprr:/config"
+      "${mediaRoot}:/media"
     ];
+  };
+
+  systemd.services."${config.virtualisation.oci-containers.backend}-bookkeeprr".unitConfig.RequiresMountsFor = [ mediaRoot ];
+
+  # Remove the previous Suwayomi install completely. The unit only runs while
+  # the old data directory still exists, so it deactivates itself after the
+  # first successful switch.
+  systemd.services.suwayomi-cleanup = {
+    description = "Remove leftover Suwayomi data";
+
+    wantedBy = [ "multi-user.target" ];
+
+    unitConfig.ConditionPathExists = "/var/lib/suwayomi-server";
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+
+    script = ''
+      ${pkgs.coreutils}/bin/rm -rf /var/lib/suwayomi-server
+      ${pkgs.podman}/bin/podman rmi ghcr.io/suwayomi/suwayomi-server:stable 2>/dev/null || true
+    '';
   };
 
   services.seerr = {
@@ -168,6 +188,6 @@ in
     openFirewall = true;
   };
 
-  networking.firewall.allowedTCPPorts = [ 4567 ];
+  networking.firewall.allowedTCPPorts = [ 3000 ];
   networking.firewall.allowedUDPPorts = [ 6881 ];
 }
