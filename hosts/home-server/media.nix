@@ -142,6 +142,12 @@ in
 
   systemd.tmpfiles.rules = [
     "d /var/lib/bookkeeprr 0755 root root -"
+
+    # bookkeeprr hard-codes qBittorrent's save path to
+    # /media/downloads/incomplete and reads it back to import. qBittorrent runs
+    # natively on the host, so the host's /media must resolve to the same media
+    # share that the container mounts at /media.
+    "L+ /media - - - - /mnt/media"
   ];
 
   virtualisation.oci-containers.containers.bookkeeprr = {
