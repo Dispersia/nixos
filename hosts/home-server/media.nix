@@ -93,8 +93,10 @@ in
   ];
 
   systemd.services.qbittorrent.preStart = lib.mkAfter ''
-    if [ -n "''${CREDENTIALS_DIRECTORY:-}" ] && [ -f "$CREDENTIALS_DIRECTORY/webui" ]; then
-      cat "$CREDENTIALS_DIRECTORY/webui" >> /var/lib/qBittorrent/qBittorrent/config/qBittorrent.conf
+    conf=/var/lib/qBittorrent/qBittorrent/config/qBittorrent.conf
+    ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$conf")"
+    if [ -n "''${CREDENTIALS_DIRECTORY:-}" ] && [ -f "$CREDENTIALS_DIRECTORY/webui" ] && ! ${pkgs.gnugrep}/bin/grep -qF 'WebUI\Password_PBKDF2' "$conf" 2>/dev/null; then
+      ${pkgs.coreutils}/bin/cat "$CREDENTIALS_DIRECTORY/webui" >> "$conf"
     fi
   '';
   systemd.services.sabnzbd.serviceConfig.UMask = "0002";
@@ -131,7 +133,6 @@ in
     webuiPort = 8080;
     torrentingPort = 6881;
     extraArgs = [ "--confirm-legal-notice" ];
-    serverConfig.LegalNotice.Accepted = true;
   };
 
   services.sabnzbd = {
