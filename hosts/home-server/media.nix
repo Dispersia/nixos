@@ -83,7 +83,6 @@ in
   systemd.services.bazarr.serviceConfig.UMask = "0002";
   systemd.services.qbittorrent.serviceConfig.UMask = "0002";
   systemd.services.sabnzbd.serviceConfig.UMask = "0002";
-  systemd.services.suwayomi-server.serviceConfig.UMask = "0002";
 
   services.sonarr = {
     enable = true;
@@ -135,11 +134,33 @@ in
     };
   };
 
-  services.suwayomi-server = {
-    enable = true;
-    openFirewall = true;
+  # Suwayomi-Server releases run far ahead of the version packaged in nixpkgs,
+  # so run the official upstream container image instead. The image keeps its
+  # data in $HOME/.local/share/Tachidesk, which we bind-mount from the old
+  # services.suwayomi-server data directory so the existing library, sources,
+  # downloads and database are kept.
+  users.users.suwayomi = {
+    isSystemUser = true;
+    uid = 987;
     group = "media";
-    settings.server.port = 4567;
+    home = "/var/lib/suwayomi-server";
+    createHome = false;
+  };
+
+  virtualisation.podman.enable = true;
+
+  systemd.tmpfiles.rules = [
+    "d /var/lib/suwayomi-server/.local/share/Tachidesk 0700 suwayomi media -"
+  ];
+
+  virtualisation.oci-containers.containers.suwayomi-server = {
+    image = "ghcr.io/suwayomi/suwayomi-server:stable";
+    user = "987:2000";
+    environment.TZ = "America/Phoenix";
+    ports = [ "4567:4567" ];
+    volumes = [
+      "/var/lib/suwayomi-server/.local/share/Tachidesk:/home/suwayomi/.local/share/Tachidesk"
+    ];
   };
 
   services.seerr = {
@@ -147,5 +168,6 @@ in
     openFirewall = true;
   };
 
+  networking.firewall.allowedTCPPorts = [ 4567 ];
   networking.firewall.allowedUDPPorts = [ 6881 ];
 }
