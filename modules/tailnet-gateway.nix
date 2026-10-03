@@ -143,6 +143,9 @@ in
       resolveLocalQueries = false;
       settings = {
         address = [ "/${cfg.domain}/${cfg.address}" ];
+        # dnsmasq defaults local records to TTL 0 (no caching), which forces a
+        # fresh lookup per connection. Give clients something cacheable.
+        "local-ttl" = 300;
         domain-needed = true;
         bogus-priv = true;
       };
