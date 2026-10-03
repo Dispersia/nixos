@@ -60,8 +60,6 @@ let
     }
   '';
 
-  # Caddy's internal CA root, served over plain HTTP so a device can fetch it
-  # before it trusts it. Safe to expose — it is a public certificate.
   caRoot = "/var/lib/caddy/.local/share/caddy/pki/authorities/local";
 in
 {
@@ -71,10 +69,7 @@ in
     domain = mkOption {
       type = types.str;
       default = "home.arpa";
-      description = ''
-        Internal DNS suffix. Each route is exposed as `<name>.<domain>` and
-        resolves to {option}`services.tailnetGateway.address`.
-      '';
+      description = "Internal DNS suffix. Routes are exposed as <name>.<domain>.";
     };
 
     address = mkOption {
@@ -99,11 +94,7 @@ in
     https = mkOption {
       type = types.bool;
       default = true;
-      description = ''
-        Serve HTTPS using Caddy's internal CA. Clients must trust the CA
-        (fetchable over HTTP at `http://ca.<domain>/root.crt`). When false, the
-        gateway serves plain HTTP only.
-      '';
+      description = "Serve HTTPS with Caddy's internal CA; the CA root is served at http://ca.<domain>/root.crt.";
     };
 
     routes = mkOption {
@@ -129,7 +120,7 @@ in
           jellyfin = { port = 8096; };
         }
       '';
-      description = "Services to expose as `<name>.<domain>`.";
+      description = "Services to expose as <name>.<domain>.";
     };
   };
 
@@ -147,7 +138,6 @@ in
           file_server
         }
 
-        # Plain HTTP so untrusted devices can install the CA root.
         http://ca.${cfg.domain} {
           bind ${cfg.listenAddress}
           root * ${caRoot}
@@ -157,22 +147,16 @@ in
       '';
     };
 
-    # Caddy binds the Tailscale address, so it must start after tailscaled has
-    # assigned it.
     systemd.services.caddy = {
       wants = [ "tailscaled.service" ];
       after = [ "tailscaled.service" ];
     };
 
-    # Wildcard DNS for the suffix: every name under it resolves to this host.
-    # Clients are pointed here by a Tailscale Split DNS nameserver entry.
     services.dnsmasq = {
       enable = true;
       resolveLocalQueries = false;
       settings = {
         address = [ "/${cfg.domain}/${cfg.address}" ];
-        # dnsmasq defaults local records to TTL 0 (no caching), which forces a
-        # fresh lookup per connection. Give clients something cacheable.
         "local-ttl" = 300;
         domain-needed = true;
         bogus-priv = true;

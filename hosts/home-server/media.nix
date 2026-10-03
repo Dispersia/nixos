@@ -136,8 +136,6 @@ in
       download_dir = "/var/lib/sabnzbd/downloads";
       complete_dir = "/mnt/media/downloads";
       permissions = "775";
-      # SABnzbd validates the Host header; without this it 403s the
-      # gateway's hostname.
       host_whitelist = "sabnzbd.${config.services.tailnetGateway.domain}";
     };
   };
@@ -206,10 +204,6 @@ in
     openFirewall = true;
   };
 
-  # Friendly, portless names over the tailnet: http://seerr.home.arpa etc.
-  # Caddy reverse-proxies each <name>.home.arpa to the service's loopback port;
-  # dnsmasq answers the wildcard so clients only need one Tailscale Split DNS
-  # nameserver entry (100.84.150.49 for `home.arpa`).
   services.tailnetGateway = {
     enable = true;
     address = "100.84.150.49";
