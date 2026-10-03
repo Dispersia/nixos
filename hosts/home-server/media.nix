@@ -136,6 +136,9 @@ in
       download_dir = "/var/lib/sabnzbd/downloads";
       complete_dir = "/mnt/media/downloads";
       permissions = "775";
+      # SABnzbd validates the Host header; without this it 403s the
+      # gateway's hostname.
+      host_whitelist = "sabnzbd.${config.services.tailnetGateway.domain}";
     };
   };
 
