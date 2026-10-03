@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   mediaRoot = "/mnt/media";
@@ -169,7 +174,8 @@ in
     ];
   };
 
-  systemd.services."${config.virtualisation.oci-containers.backend}-bookkeeprr".unitConfig.RequiresMountsFor = [ mediaRoot ];
+  systemd.services."${config.virtualisation.oci-containers.backend}-bookkeeprr".unitConfig.RequiresMountsFor =
+    [ mediaRoot ];
 
   # Remove the previous Suwayomi install completely. The unit only runs while
   # the old data directory still exists, so it deactivates itself after the
@@ -195,6 +201,47 @@ in
   services.seerr = {
     enable = true;
     openFirewall = true;
+  };
+
+  # Friendly, portless names over the tailnet: http://seerr.home.arpa etc.
+  # Caddy reverse-proxies each <name>.home.arpa to the service's loopback port;
+  # dnsmasq answers the wildcard so clients only need one Tailscale Split DNS
+  # nameserver entry (100.84.150.49 for `home.arpa`).
+  services.tailnetGateway = {
+    enable = true;
+    address = "100.84.150.49";
+    routes = {
+      prowlarr = {
+        port = 9696;
+      };
+      sonarr = {
+        port = 8989;
+      };
+      radarr = {
+        port = 7878;
+      };
+      bazarr = {
+        port = 6767;
+      };
+      jellyfin = {
+        port = 8096;
+      };
+      qbittorrent = {
+        port = 8080;
+      };
+      sabnzbd = {
+        port = 8085;
+      };
+      seerr = {
+        port = 5055;
+      };
+      bookkeeprr = {
+        port = 3000;
+      };
+      flaresolverr = {
+        port = 8191;
+      };
+    };
   };
 
   networking.firewall.allowedTCPPorts = [ 3000 ];
