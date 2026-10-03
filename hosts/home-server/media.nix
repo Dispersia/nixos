@@ -152,7 +152,10 @@ in
       BOOKKEEPRR_LOG_LEVEL = "info";
     };
 
-    ports = [ "3000:3000" ];
+    # Share the host network namespace so bookkeeprr can reach the other
+    # services at 127.0.0.1 (qBittorrent, Prowlarr, ...) exactly like the
+    # native *arr services do.
+    extraOptions = [ "--network=host" ];
 
     volumes = [
       "/var/lib/bookkeeprr:/config"
