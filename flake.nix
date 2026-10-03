@@ -120,6 +120,7 @@
                     };
                   home-manager.extraSpecialArgs = { inherit inputs hostName username; };
                 }
+                ./modules/tailnet-ca.nix
                 bravePolicies
               ];
             };
@@ -130,6 +131,7 @@
               specialArgs = { inherit inputs hostName username; };
               modules = [
                 ./hosts/${hostName}
+                ./modules/tailnet-ca.nix
               ];
             };
           # NVIDIA Jetson (aarch64) hosts, using jetpack-nixos.
@@ -141,6 +143,7 @@
               modules = [
                 ./hosts/${hostName}
                 inputs.jetpack.nixosModules.default
+                ./modules/tailnet-ca.nix
               ];
             };
           mkAndroidHost =
@@ -170,6 +173,7 @@
                     };
                   home-manager.extraSpecialArgs = { inherit inputs hostName username; };
                 }
+                ./modules/tailnet-ca.nix
                 bravePolicies
               ];
             };
@@ -188,6 +192,7 @@
               };
               modules = [
                 ./hosts/${hostName}
+                ./modules/tailnet-ca-darwin.nix
 
                 home-manager.darwinModules.home-manager
                 {

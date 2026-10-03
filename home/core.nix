@@ -1,5 +1,7 @@
 { username, ... }:
 {
+  imports = [ ../modules/tailnet-ca-home.nix ];
+
   home = {
     inherit username;
 
