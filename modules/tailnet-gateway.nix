@@ -13,10 +13,13 @@ let
     mkIf
     mkOption
     mapAttrsToList
+    optionalString
     types
     ;
 
   fqdn = name: "${name}.${cfg.domain}";
+  scheme = if cfg.https then "https" else "http";
+  tlsConfig = optionalString cfg.https "tls internal";
 
   landing = pkgs.writeTextDir "index.html" ''
     <!doctype html>
@@ -39,7 +42,9 @@ let
         <h1>${cfg.domain}</h1>
         <ul>
           ${concatStringsSep "\n          " (
-            mapAttrsToList (name: _: ''<li><a href="http://${fqdn name}/">${fqdn name}</a></li>'') cfg.routes
+            mapAttrsToList (
+              name: _: ''<li><a href="${scheme}://${fqdn name}/">${fqdn name}</a></li>''
+            ) cfg.routes
           )}
         </ul>
       </body>
@@ -47,13 +52,17 @@ let
   '';
 
   siteBlock = name: route: ''
-    http://${fqdn name} {
+    ${scheme}://${fqdn name} {
       bind ${cfg.listenAddress}
+      ${tlsConfig}
       reverse_proxy 127.0.0.1:${toString route.port}
       ${route.extraConfig}
     }
   '';
 
+  # Caddy's internal CA root, served over plain HTTP so a device can fetch it
+  # before it trusts it. Safe to expose — it is a public certificate.
+  caRoot = "/var/lib/caddy/.local/share/caddy/pki/authorities/local";
 in
 {
   options.services.tailnetGateway = {
@@ -78,13 +87,23 @@ in
       type = types.str;
       default = cfg.address;
       defaultText = lib.literalExpression "config.services.tailnetGateway.address";
-      description = "Address Caddy binds its HTTP listener to.";
+      description = "Address Caddy binds its listener to.";
     };
 
     httpPort = mkOption {
       type = types.port;
       default = 80;
-      description = "Port Caddy listens on.";
+      description = "Port Caddy listens on for HTTP.";
+    };
+
+    https = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Serve HTTPS using Caddy's internal CA. Clients must trust the CA
+        (fetchable over HTTP at `http://ca.<domain>/root.crt`). When false, the
+        gateway serves plain HTTP only.
+      '';
     };
 
     routes = mkOption {
@@ -119,13 +138,22 @@ in
       enable = true;
       httpPort = cfg.httpPort;
       extraConfig = ''
-        http://${cfg.domain}, http://home.${cfg.domain} {
+        ${concatStringsSep "\n" (mapAttrsToList siteBlock cfg.routes)}
+
+        ${scheme}://${cfg.domain}, ${scheme}://home.${cfg.domain} {
           bind ${cfg.listenAddress}
+          ${tlsConfig}
           root * ${landing}
           file_server
         }
 
-        ${concatStringsSep "\n" (mapAttrsToList siteBlock cfg.routes)}
+        # Plain HTTP so untrusted devices can install the CA root.
+        http://ca.${cfg.domain} {
+          bind ${cfg.listenAddress}
+          root * ${caRoot}
+          file_server
+          header Content-Disposition "attachment; filename=root.crt"
+        }
       '';
     };
 
