@@ -241,6 +241,27 @@ in
     };
   };
 
+  services.nordvpnNetns = {
+    enable = true;
+    tokenFile = "/home/dispe/.secrets/nordvpn-token";
+    country = "United States";
+    services = [
+      "prowlarr"
+      "sonarr"
+      "radarr"
+      "qbittorrent"
+      "sabnzbd"
+    ];
+    ports = [
+      8080
+      8085
+      8989
+      7878
+      9696
+    ];
+    hostProxyPorts = [ 8191 ];
+  };
+
   networking.firewall.allowedTCPPorts = [ 3000 ];
   networking.firewall.allowedUDPPorts = [ 6881 ];
 }

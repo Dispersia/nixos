@@ -10,6 +10,7 @@
     ../../modules/jellyfin.nix
     ../../modules/tailscale.nix
     ../../modules/tailnet-gateway.nix
+    ../../modules/nordvpn-netns.nix
     ../../modules/hashicorp-bin.nix
     ../../modules/comin.nix
 
