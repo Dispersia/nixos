@@ -1,12 +1,4 @@
-"""yomifin-ocr providers package.
 
-Public surface:
-
-* :class:`~providers.base.OcrProvider`, :class:`~providers.base.OcrRegion`,
-  :class:`~providers.base.OcrResult`, :class:`~providers.base.ProviderUnavailable`
-* :func:`~providers.registry.build_registry`,
-  :class:`~providers.registry.ProviderRegistry`
-"""
 
 from .base import (
     HORIZONTAL,

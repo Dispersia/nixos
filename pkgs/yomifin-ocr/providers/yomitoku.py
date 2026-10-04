@@ -1,9 +1,4 @@
-"""YomiToku provider: the preferred Japanese OCR engine.
 
-YomiToku is imported lazily. If the package is missing, :class:`ProviderUnavailable`
-is raised with an install hint. YomiToku's native word/line boxes are mapped onto
-the YomiFin region model; the native schema is never exposed to callers.
-"""
 
 from __future__ import annotations
 
@@ -26,12 +21,16 @@ from .base import (
     polygon_from_box,
 )
 
-#: YomiToku reports this model name when the concrete checkpoint is unknown.
+
 DEFAULT_MODEL = "yomitoku"
 
 
+def _normalize_text(text: str) -> str:
+    return text.replace("~", "ー").replace("～", "ー").replace("〜", "ー")
+
+
 class YomiTokuProvider(OcrProvider):
-    """Adapter for the ``yomitoku`` document/manga OCR engine."""
+
 
     name = "yomitoku"
     provider_version = "0.1.0"
@@ -41,11 +40,11 @@ class YomiTokuProvider(OcrProvider):
         self._analyzer: Any | None = None
         self._model_version: str | None = None
 
-    # ------------------------------------------------------------------
-    # Metadata
-    # ------------------------------------------------------------------
+
+
+
     @property
-    def model_version(self) -> str:  # type: ignore[override]
+    def model_version(self) -> str:
         if self._model_version is None:
             version = package_version("yomitoku")
             self._model_version = f"{DEFAULT_MODEL}-{version}" if version else DEFAULT_MODEL
@@ -54,39 +53,39 @@ class YomiTokuProvider(OcrProvider):
     def is_available(self) -> bool:
         return module_available("yomitoku")
 
-    # ------------------------------------------------------------------
-    # Engine lifecycle
-    # ------------------------------------------------------------------
+
+
+
     def _build_analyzer(self) -> Any:
         try:
-            from yomitoku import DocumentAnalyzer  # type: ignore import-not-found
+            from yomitoku import DocumentAnalyzer
         except Exception as exc:
             raise ProviderUnavailable(
                 "YomiToku is not installed on the yomifin-ocr host. Install it with "
                 "`pip install yomifin-ocr[yomitoku]` (or `pip install yomitoku`)."
             ) from exc
 
-        # YomiToku's constructor signature has changed across releases; try the
-        # known shapes in order and fall back to the bare constructor.
+
+
+        last_error: Exception | None = None
         for kwargs in ({"device": "cpu"}, {"device": "cpu", "visualize": False}, {}):
             try:
                 return DocumentAnalyzer(**kwargs)
-            except TypeError:
+            except Exception as exc:
+                last_error = exc
                 continue
-            except Exception as exc:  # pragma: no cover - engine-specific
-                raise ProviderUnavailable(
-                    f"YomiToku is installed but failed to initialise: {exc}"
-                ) from exc
-        raise ProviderUnavailable("YomiToku is installed but could not be initialised.")
+        raise ProviderUnavailable(
+            f"YomiToku is installed but failed to initialise: {last_error}"
+        )
 
     def _get_analyzer(self) -> Any:
         if self._analyzer is None:
             self._analyzer = self._build_analyzer()
         return self._analyzer
 
-    # ------------------------------------------------------------------
-    # Recognition
-    # ------------------------------------------------------------------
+
+
+
     def recognize(self, image: bytes, content_type: str, language: str) -> OcrResult:
         analyzer = self._get_analyzer()
         array = decode_image_to_ndarray(image)
@@ -94,7 +93,7 @@ class YomiTokuProvider(OcrProvider):
 
         try:
             output = analyzer(array)
-        except Exception as exc:  # pragma: no cover - engine-specific
+        except Exception as exc:
             raise OcrError(f"YomiToku failed to process the image: {exc}") from exc
 
         if isinstance(output, tuple):
@@ -120,30 +119,11 @@ class YomiTokuProvider(OcrProvider):
         )
 
 
-# ----------------------------------------------------------------------
-# Native-format parsing helpers
-# ----------------------------------------------------------------------
+
+
+
 def _iter_words(results: Any, ocr_results: Any) -> Iterator[tuple[Any, Any]]:
-    """Yield ``(word_like, paragraph_direction)`` from YomiToku output.
-
-    YomiToku nests words inside paragraphs (``results.paragraphs[].words``) and
-    may also return a flat list of per-line OCR results. This walks the known
-    shapes defensively so adapter changes don't crash on a new release.
-    """
-
     for container in _containers(results) + _containers(ocr_results):
-        paragraphs = get_attr(container, "paragraphs")
-        if paragraphs:
-            for paragraph in paragraphs:
-                direction = get_attr(paragraph, "direction")
-                words = get_attr(paragraph, "words", "lines")
-                if words:
-                    for word in words:
-                        yield word, direction
-                else:
-                    yield paragraph, direction
-            continue
-
         words = get_attr(container, "words", "lines")
         if words:
             direction = get_attr(container, "direction")
@@ -151,8 +131,19 @@ def _iter_words(results: Any, ocr_results: Any) -> Iterator[tuple[Any, Any]]:
                 yield word, direction
             continue
 
-        # A bare word/line object.
-        if get_attr(container, "content", "text", "rec_text") is not None:
+        paragraphs = get_attr(container, "paragraphs")
+        if paragraphs:
+            for paragraph in paragraphs:
+                direction = get_attr(paragraph, "direction")
+                lines = get_attr(paragraph, "words", "lines")
+                if lines:
+                    for line in lines:
+                        yield line, direction
+                else:
+                    yield paragraph, direction
+            continue
+
+        if get_attr(container, "contents", "content", "text", "rec_text") is not None:
             yield container, get_attr(container, "direction")
 
 
@@ -171,16 +162,16 @@ def _word_to_region(
     width: int,
     height: int,
 ) -> OcrRegion | None:
-    text = get_attr(word, "content", "text", "rec_text")
+    text = get_attr(word, "contents", "content", "text", "rec_text")
     if text is None:
         return None
-    text = str(text).strip()
+    text = _normalize_text(str(text).strip())
     if not text:
         return None
 
     points = coerce_points(get_attr(word, "points", "polygon", "box", "bbox"))
     if len(points) < 3:
-        # Fall back to a full-page region if geometry is missing.
+
         if width > 0 and height > 0:
             points = polygon_from_box(0, 0, width, height)
         else:
@@ -207,7 +198,7 @@ def _coerce_confidence(value: Any) -> float | None:
         confidence = float(value)
     except (TypeError, ValueError):
         return None
-    # Some engines emit percentages (0..100); normalise to 0..1.
+
     if confidence > 1.0:
         confidence = confidence / 100.0
     return max(0.0, min(1.0, confidence))

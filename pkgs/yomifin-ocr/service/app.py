@@ -1,26 +1,4 @@
-"""FastAPI application implementing the yomifin-ocr wire contract.
 
-Endpoints
----------
-
-``POST /ocr``
-    Body is the raw encoded image. Headers: ``Content-Type: image/*``,
-    ``X-Language: ja|auto|...`` and optional ``X-Provider: yomitoku|paddleocr|...``.
-    Returns the normalised region JSON described in ``README.md``.
-
-``GET /health``
-    ``{"status": "ok", "providers": {<name>: <available>}}``.
-
-``GET /providers``
-    ``{"providers": [...], "default": "paddleocr", "japanese": "yomitoku"}``.
-
-The wire contract is defined by the .NET client in
-``src/Jellyfin.Plugin.YomiFin/Ocr/SidecarOcrProvider.cs``; keys are snake_case.
-
-Run from the ``ocr/`` directory::
-
-    uvicorn service.app:app --host 0.0.0.0 --port 8642
-"""
 
 from __future__ import annotations
 
@@ -34,14 +12,14 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
-# Allow both `uvicorn service.app:app` (from ocr/) and imports that do not put
-# the ocr/ directory on sys.path. This makes `import providers.*` work.
+
+
 _PACKAGE_ROOT = Path(__file__).resolve().parent.parent
 if str(_PACKAGE_ROOT) not in sys.path:
     sys.path.insert(0, str(_PACKAGE_ROOT))
 
-from providers.base import OcrResult, ProviderUnavailable  # noqa: E402
-from providers.registry import (  # noqa: E402
+from providers.base import OcrResult, ProviderUnavailable
+from providers.registry import (
     DEFAULT_PROVIDER,
     JAPANESE_PROVIDER,
     ProviderRegistry,
@@ -52,14 +30,14 @@ APP_VERSION = "0.1.0"
 
 app = FastAPI(title="yomifin-ocr", version=APP_VERSION)
 
-# ----------------------------------------------------------------------
-# Registry access (overridable for tests)
-# ----------------------------------------------------------------------
+
+
+
 _registry: ProviderRegistry | None = None
 
 
 def get_registry() -> ProviderRegistry:
-    """Return the process-wide registry, building it on first use."""
+
 
     global _registry
     if _registry is None:
@@ -68,15 +46,15 @@ def get_registry() -> ProviderRegistry:
 
 
 def set_registry(registry: ProviderRegistry | None) -> None:
-    """Replace the process-wide registry (used by tests and embeddings)."""
+
 
     global _registry
     _registry = registry
 
 
-# ----------------------------------------------------------------------
-# Optional bearer-token authentication
-# ----------------------------------------------------------------------
+
+
+
 def _configured_token() -> str:
     return os.environ.get("YOMIFIN_OCR_TOKEN", "").strip()
 
@@ -90,14 +68,11 @@ def _check_auth(request: Request) -> None:
         raise HTTPException(status_code=401, detail="Missing or invalid bearer token.")
 
 
-# ----------------------------------------------------------------------
-# Helpers
-# ----------------------------------------------------------------------
-def _read_image_dimensions(body: bytes) -> tuple[int, int]:
-    """Decode ``body`` with Pillow and return ``(width, height)``.
 
-    Raises HTTP 400 when the body is empty or not a decodable image.
-    """
+
+
+def _read_image_dimensions(body: bytes) -> tuple[int, int]:
+
 
     if not body:
         raise HTTPException(
@@ -110,7 +85,7 @@ def _read_image_dimensions(body: bytes) -> tuple[int, int]:
 
         with Image.open(io.BytesIO(body)) as image:
             width, height = image.size
-            image.load()  # force a full decode so truncated data fails here
+            image.load()
     except HTTPException:
         raise
     except Exception as exc:
@@ -129,7 +104,7 @@ def _serialize(
     fallback_width: int,
     fallback_height: int,
 ) -> dict[str, Any]:
-    """Convert an :class:`OcrResult` into the snake_case wire payload."""
+
 
     width = result.width if result.width and result.width > 0 else fallback_width
     height = result.height if result.height and result.height > 0 else fallback_height
@@ -157,9 +132,9 @@ def _serialize(
     }
 
 
-# ----------------------------------------------------------------------
-# Error handlers (every non-2xx response has a JSON body)
-# ----------------------------------------------------------------------
+
+
+
 @app.exception_handler(ProviderUnavailable)
 async def _provider_unavailable_handler(request: Request, exc: ProviderUnavailable) -> JSONResponse:
     return JSONResponse(
@@ -176,9 +151,9 @@ async def _unhandled_exception_handler(request: Request, exc: Exception) -> JSON
     )
 
 
-# ----------------------------------------------------------------------
-# Routes
-# ----------------------------------------------------------------------
+
+
+
 @app.get("/")
 async def root() -> dict[str, Any]:
     return {
@@ -221,7 +196,7 @@ async def ocr(request: Request) -> JSONResponse:
     body = await request.body()
     fallback_width, fallback_height = _read_image_dimensions(body)
 
-    # Raises ProviderUnavailable (-> 503) when the requested provider is missing.
+
     provider = registry.select(provider=provider_name, language=language)
 
     try:

@@ -1,11 +1,4 @@
-"""manga-ocr provider: optional compatibility engine, not the primary one.
 
-``manga-ocr`` recognises a single block of Japanese text for an entire crop and
-does not emit layout geometry. YomiFin therefore reports one full-page region
-with no confidence. This provider exists for experimentation and compatibility
-only; :class:`~providers.yomitoku.YomiTokuProvider` is the preferred Japanese
-engine and :class:`~providers.paddle_ocr.PaddleOcrProvider` the default.
-"""
 
 from __future__ import annotations
 
@@ -28,7 +21,7 @@ DEFAULT_MODEL = "manga-ocr"
 
 
 class MangaOcrProvider(OcrProvider):
-    """Adapter for the ``manga-ocr`` engine."""
+
 
     name = "manga_ocr"
     provider_version = "0.1.0"
@@ -38,11 +31,11 @@ class MangaOcrProvider(OcrProvider):
         self._engine: Any | None = None
         self._model_version: str | None = None
 
-    # ------------------------------------------------------------------
-    # Metadata
-    # ------------------------------------------------------------------
+
+
+
     @property
-    def model_version(self) -> str:  # type: ignore[override]
+    def model_version(self) -> str:
         if self._model_version is None:
             version = package_version("manga-ocr")
             self._model_version = f"{DEFAULT_MODEL}-{version}" if version else DEFAULT_MODEL
@@ -51,13 +44,13 @@ class MangaOcrProvider(OcrProvider):
     def is_available(self) -> bool:
         return module_available("manga_ocr")
 
-    # ------------------------------------------------------------------
-    # Engine lifecycle
-    # ------------------------------------------------------------------
+
+
+
     def _get_engine(self) -> Any:
         if self._engine is None:
             try:
-                from manga_ocr import MangaOcr  # type: ignore import-not-found
+                from manga_ocr import MangaOcr
             except Exception as exc:
                 raise ProviderUnavailable(
                     "manga-ocr is not installed on the yomifin-ocr host. Install it with "
@@ -65,15 +58,15 @@ class MangaOcrProvider(OcrProvider):
                 ) from exc
             try:
                 self._engine = MangaOcr()
-            except Exception as exc:  # pragma: no cover - engine-specific
+            except Exception as exc:
                 raise ProviderUnavailable(
                     f"manga-ocr is installed but failed to initialise: {exc}"
                 ) from exc
         return self._engine
 
-    # ------------------------------------------------------------------
-    # Recognition
-    # ------------------------------------------------------------------
+
+
+
     def recognize(self, image: bytes, content_type: str, language: str) -> OcrResult:
         engine = self._get_engine()
 
@@ -84,7 +77,7 @@ class MangaOcrProvider(OcrProvider):
             width, height = rgb.width, rgb.height
             try:
                 text = engine(rgb)
-            except Exception as exc:  # pragma: no cover - engine-specific
+            except Exception as exc:
                 raise OcrError(f"manga-ocr failed to process the image: {exc}") from exc
 
         text = (text or "").strip()
@@ -95,7 +88,7 @@ class MangaOcrProvider(OcrProvider):
                     polygon=polygon_from_box(0, 0, width, height),
                     text=text,
                     confidence=None,
-                    # A full-page crop gives no layout information.
+
                     direction=UNKNOWN,
                     language="ja",
                 )
