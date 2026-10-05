@@ -111,6 +111,16 @@ class MangaJaNaiProvider(UpscaleProvider):
         )
 
         spec = self._resolve_spec(request.model, mode, image.height, request.scale)
+        max_size = (
+            request.max_size
+            if request.max_size and request.max_size > 0
+            else self._max_output_size
+        )
+        if max_size > 0:
+            # Size the input so the model's native output hits the target; this
+            # is much crisper than upscaling at full res and downscaling after.
+            image = self._size_input_for_output(image, max_size, spec.scale)
+            spec = self._resolve_spec(request.model, mode, image.height, request.scale)
         model_path = ensure_model(
             spec, self._models_dir, allow_download=self._allow_download
         )
@@ -123,7 +133,7 @@ class MangaJaNaiProvider(UpscaleProvider):
         out_image = (
             Image.fromarray(output) if output.ndim == 2 else Image.fromarray(output, "RGB")
         )
-        out_image = self._cap_output_size(out_image, request.max_size)
+        out_image = self._cap_output_size(out_image, max_size)
         output_format = resolve_output_format(request.format, request.content_type)
         data, content_type = encode_image(out_image, output_format)
 
@@ -139,6 +149,20 @@ class MangaJaNaiProvider(UpscaleProvider):
             height=out_image.height,
             input_width=image.width,
             input_height=image.height,
+        )
+
+    @staticmethod
+    def _size_input_for_output(
+        image: Image.Image, max_size: int, scale: int
+    ) -> Image.Image:
+        target = max(1, max_size // max(1, scale))
+        longest = max(image.size)
+        if longest <= target:
+            return image
+        factor = target / longest
+        return image.resize(
+            (max(1, round(image.width * factor)), max(1, round(image.height * factor))),
+            Image.LANCZOS,
         )
 
     def _cap_output_size(self, image: Image.Image, request_max: int) -> Image.Image:
