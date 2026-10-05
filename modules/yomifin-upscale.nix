@@ -199,6 +199,8 @@ in
           YOMIFIN_UPSCALE_AUTO_DOWNLOAD = if cfg.autoDownloadModels then "1" else "0";
           YOMIFIN_UPSCALE_FP16 = if cfg.fp16 then "1" else "0";
           YOMIFIN_UPSCALE_MAX_INPUT_HEIGHT = toString cfg.maxInputHeight;
+          YOMIFIN_UPSCALE_MAX_OUTPUT_SIZE = "4096";
+          YOMIFIN_UPSCALE_SHARPEN = "150";
           PATH = lib.makeBinPath [
             pkgs.uv
             pkgs.python3

@@ -90,6 +90,7 @@ histogram). An optional bearer token can be required with
 | `YOMIFIN_UPSCALE_FP16`            | auto             | Force/disable half precision. Set `1` on Apple Silicon (MPS) for a large speedup. |
 | `YOMIFIN_UPSCALE_MAX_INPUT_HEIGHT`| `0`              | Downscale taller pages to this height before upscaling (0 = off). `1600` roughly matches MangaJaNaiConverterGui and cuts MPS work a lot. |
 | `YOMIFIN_UPSCALE_MAX_OUTPUT_SIZE` | `0`              | Downscale the upscaled result so its longest side is at most this many pixels (0 = native). `4096` gives a 4K-ish file without the huge native size. Can be overridden per request with `X-Max-Size`. |
+| `YOMIFIN_UPSCALE_SHARPEN`         | `0`              | Unsharp-mask amount (percent) applied after upscaling. The models soften manga lettering; `150` restores crisp text. Override per request with `X-Sharpen`. |
 | `YOMIFIN_UPSCALE_TOKEN`           | (none)           | Require `Authorization: Bearer <token>`.           |
 | `YOMIFIN_UPSCALE_MAX_BYTES`       | `134217728`      | Maximum request body size.                         |
 | `YOMIFIN_UPSCALE_TIMEOUT_SECONDS` | `1200`           | Per-request inference timeout.                     |

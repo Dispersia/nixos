@@ -161,6 +161,15 @@ def _normalize_max_size(value: str | None) -> int:
     return size if size > 0 else 0
 
 
+def _normalize_sharpen(value: str | None) -> int:
+    raw = (value or "").strip()
+    try:
+        amount = int(raw)
+    except ValueError:
+        return 0
+    return max(0, min(amount, 1000))
+
+
 @app.exception_handler(PayloadTooLarge)
 async def _payload_too_large_handler(request: Request, exc: PayloadTooLarge) -> JSONResponse:
     return JSONResponse(
@@ -266,6 +275,7 @@ async def upscale(request: Request) -> Response:
         scale=_normalize_scale(request.headers.get("x-scale")),
         format=_normalize_format(request.headers.get("x-format")),
         max_size=_normalize_max_size(request.headers.get("x-max-size")),
+        sharpen=_normalize_sharpen(request.headers.get("x-sharpen")),
     )
 
     try:

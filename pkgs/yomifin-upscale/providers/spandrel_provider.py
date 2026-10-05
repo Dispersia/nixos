@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageFilter
 
 from .base import UpscaleProvider, UpscaleRequest, UpscaleResult
 from .color import is_grayscale
@@ -45,6 +45,7 @@ class MangaJaNaiProvider(UpscaleProvider):
         self._allow_download = allow_download
         self._max_input_height = _env_int("YOMIFIN_UPSCALE_MAX_INPUT_HEIGHT", 0)
         self._max_output_size = _env_int("YOMIFIN_UPSCALE_MAX_OUTPUT_SIZE", 0)
+        self._sharpen = _env_int("YOMIFIN_UPSCALE_SHARPEN", 0)
 
     def is_available(self) -> bool:
         try:
@@ -81,6 +82,7 @@ class MangaJaNaiProvider(UpscaleProvider):
             "models_dir": str(self._models_dir),
             "max_input_height": self._max_input_height,
             "max_output_size": self._max_output_size,
+            "sharpen": self._sharpen,
             "auto_download": (
                 self._allow_download
                 if self._allow_download is not None
@@ -134,6 +136,7 @@ class MangaJaNaiProvider(UpscaleProvider):
             Image.fromarray(output) if output.ndim == 2 else Image.fromarray(output, "RGB")
         )
         out_image = self._cap_output_size(out_image, max_size)
+        out_image = self._apply_sharpen(out_image, request.sharpen)
         output_format = resolve_output_format(request.format, request.content_type)
         data, content_type = encode_image(out_image, output_format)
 
@@ -176,6 +179,14 @@ class MangaJaNaiProvider(UpscaleProvider):
         return image.resize(
             (max(1, round(image.width * factor)), max(1, round(image.height * factor))),
             Image.LANCZOS,
+        )
+
+    def _apply_sharpen(self, image: Image.Image, request_sharpen: int) -> Image.Image:
+        amount = request_sharpen if request_sharpen and request_sharpen > 0 else self._sharpen
+        if amount <= 0:
+            return image
+        return image.filter(
+            ImageFilter.UnsharpMask(radius=2, percent=int(amount), threshold=2)
         )
 
     def _cap_input_height(self, image: Image.Image) -> Image.Image:
