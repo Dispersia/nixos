@@ -10,7 +10,7 @@ import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
-from .constants import ILLUSTRATION, MANGA, MANGA_HEIGHT_BUCKETS
+from .constants import ILLUSTRATION, MANGA, MANGA_HEIGHT_BUCKETS, TEXT
 from .errors import ModelUnavailable
 
 _logger = logging.getLogger("yomifin-upscale")
@@ -87,6 +87,14 @@ SPAN_MODERN_V15_URL = (
     "2x_ModernSpanimationV1.5/2x_ModernSpanimationV1.5.pth"
 )
 
+# TextBSR's text-restoration network: an RRDBNet (ESRGAN, 4x) trained on scene
+# text. spandrel loads it like any other model, so lettering detected by OCR can
+# be crisped up without pulling in TextBSR's old cnstd / numpy<=1.23 stack.
+TEXT_RESTORE = "bsrgan_text_256.pth"
+TEXT_RESTORE_URL = (
+    "https://github.com/csxmli2016/textbsr/releases/download/0.2.0/bsrgan_text_256.pth"
+)
+
 
 @dataclass(frozen=True)
 class ModelSpec:
@@ -134,6 +142,9 @@ def _build_known_models() -> dict[str, ModelSpec]:
     )
     models[SPAN_MODERN_V15] = ModelSpec(
         SPAN_MODERN_V15, ILLUSTRATION, 2, None, None, SPAN_MODERN_V15_URL
+    )
+    models[TEXT_RESTORE] = ModelSpec(
+        TEXT_RESTORE, TEXT, 4, None, None, TEXT_RESTORE_URL
     )
     return models
 

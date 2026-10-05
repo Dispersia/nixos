@@ -38,6 +38,12 @@
     # point this at a separate file if you would rather rotate them apart.
     authTokenFile = "/Users/dispe/.config/yomifin-ocr/token";
     autoDownloadModels = true;
+    # Lettering restoration: detect text via the local OCR sidecar (bound to the
+    # LAN address, not loopback) and re-run the text model over those regions.
+    textRestore = true;
+    ocrUrl = "http://192.168.4.45:8642";
+    ocrLanguage = "ja";
+    ocrTokenFile = "/Users/dispe/.config/yomifin-ocr/token";
   };
 
   services.tailscale.enable = true;

@@ -5,6 +5,11 @@ AUTO = "auto"
 MANGA = "manga"
 ILLUSTRATION = "illustration"
 
+# Model kind for the lettering-restoration model. It is never auto-selected;
+# it is only ever requested explicitly as the text pass of the upscale
+# pipeline (see providers/text_restore.py).
+TEXT = "text"
+
 VALID_MODES = frozenset({AUTO, MANGA, ILLUSTRATION})
 DEFAULT_MODE = AUTO
 

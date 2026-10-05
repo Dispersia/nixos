@@ -170,6 +170,15 @@ def _normalize_sharpen(value: str | None) -> int:
     return max(0, min(amount, 1000))
 
 
+def _normalize_bool(value: str | None) -> bool | None:
+    raw = (value or "").strip().lower()
+    if raw in ("1", "true", "yes", "on"):
+        return True
+    if raw in ("0", "false", "no", "off"):
+        return False
+    return None
+
+
 @app.exception_handler(PayloadTooLarge)
 async def _payload_too_large_handler(request: Request, exc: PayloadTooLarge) -> JSONResponse:
     return JSONResponse(
@@ -276,6 +285,8 @@ async def upscale(request: Request) -> Response:
         format=_normalize_format(request.headers.get("x-format")),
         max_size=_normalize_max_size(request.headers.get("x-max-size")),
         sharpen=_normalize_sharpen(request.headers.get("x-sharpen")),
+        text_restore=_normalize_bool(request.headers.get("x-text-restore")),
+        text_language=(request.headers.get("x-text-language") or "").strip() or None,
     )
 
     try:

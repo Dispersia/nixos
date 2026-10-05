@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import os
 from pathlib import Path
 
 from PIL import Image, ImageFilter
@@ -11,12 +13,14 @@ from .constants import (
     DEFAULT_SCALE,
     ILLUSTRATION,
     MANGA,
+    TEXT,
 )
 from .errors import ModelUnavailable, ProviderUnavailable
 from .images import decode_image, encode_image, normalize_image, resolve_output_format
 from .inference import SpandrelBackend, _env_int
 from .models import (
     KNOWN_MODELS,
+    TEXT_RESTORE,
     auto_download_enabled,
     available_model_files,
     custom_spec,
@@ -25,6 +29,31 @@ from .models import (
     select_model,
     spec_for_name,
 )
+from .text_restore import DEFAULT_OCR_URL, TextRestorer
+
+_logger = logging.getLogger("yomifin-upscale")
+
+
+def _env_flag(name: str, default: bool) -> bool:
+    raw = os.environ.get(name, "").strip().lower()
+    if not raw:
+        return default
+    if raw in ("1", "true", "yes", "on"):
+        return True
+    if raw in ("0", "false", "no", "off"):
+        return False
+    return default
+
+
+def _env_float(name: str, default: float) -> float:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        value = float(raw)
+    except ValueError:
+        return default
+    return value if value > 0 else default
 
 
 class MangaJaNaiProvider(UpscaleProvider):
@@ -46,6 +75,14 @@ class MangaJaNaiProvider(UpscaleProvider):
         self._max_input_height = _env_int("YOMIFIN_UPSCALE_MAX_INPUT_HEIGHT", 0)
         self._max_output_size = _env_int("YOMIFIN_UPSCALE_MAX_OUTPUT_SIZE", 0)
         self._sharpen = _env_int("YOMIFIN_UPSCALE_SHARPEN", 0)
+        self._text_model_name = (
+            os.environ.get("YOMIFIN_UPSCALE_TEXT_MODEL", "").strip() or TEXT_RESTORE
+        )
+        self._text_restore_default = _env_flag("YOMIFIN_UPSCALE_TEXT_RESTORE", True)
+        self._text_ocr_url = (
+            os.environ.get("YOMIFIN_UPSCALE_OCR_URL", "").strip() or DEFAULT_OCR_URL
+        )
+        self._text_restorer = self._build_text_restorer()
 
     def is_available(self) -> bool:
         try:
@@ -56,8 +93,7 @@ class MangaJaNaiProvider(UpscaleProvider):
     def list_models(self) -> list[dict]:
         present = set(available_model_files(self._models_dir))
         models = [
-            {**spec.to_dict(), "downloaded": spec.name in present}
-            for spec in KNOWN_MODELS.values()
+            {**spec.to_dict(), "downloaded": spec.name in present} for spec in KNOWN_MODELS.values()
         ]
         for name in sorted(present):
             if name not in KNOWN_MODELS:
@@ -83,6 +119,8 @@ class MangaJaNaiProvider(UpscaleProvider):
             "max_input_height": self._max_input_height,
             "max_output_size": self._max_output_size,
             "sharpen": self._sharpen,
+            "text_restore": self._text_restore_default,
+            "text_restorer": self._text_restorer.describe(),
             "auto_download": (
                 self._allow_download
                 if self._allow_download is not None
@@ -101,6 +139,9 @@ class MangaJaNaiProvider(UpscaleProvider):
             )
 
         image = normalize_image(decode_image(request.image))
+        # Keep the full-resolution source so the lettering pass can sample text
+        # crops at native resolution even when the upscale input is downscaled.
+        source_image = image
         # The input cap is a speed hack for the heavy MangaJaNai auto path; an
         # explicitly requested model (e.g. SPAN) runs at full resolution.
         if not request.model:
@@ -114,29 +155,24 @@ class MangaJaNaiProvider(UpscaleProvider):
 
         spec = self._resolve_spec(request.model, mode, image.height, request.scale)
         max_size = (
-            request.max_size
-            if request.max_size and request.max_size > 0
-            else self._max_output_size
+            request.max_size if request.max_size and request.max_size > 0 else self._max_output_size
         )
         if max_size > 0:
             # Size the input so the model's native output hits the target; this
             # is much crisper than upscaling at full res and downscaling after.
             image = self._size_input_for_output(image, max_size, spec.scale)
             spec = self._resolve_spec(request.model, mode, image.height, request.scale)
-        model_path = ensure_model(
-            spec, self._models_dir, allow_download=self._allow_download
-        )
+        model_path = ensure_model(spec, self._models_dir, allow_download=self._allow_download)
 
         import numpy as np
 
         array = np.asarray(image)
         output = self._backend.upscale(str(model_path), array)
 
-        out_image = (
-            Image.fromarray(output) if output.ndim == 2 else Image.fromarray(output, "RGB")
-        )
+        out_image = Image.fromarray(output) if output.ndim == 2 else Image.fromarray(output, "RGB")
         out_image = self._cap_output_size(out_image, max_size)
         out_image = self._apply_sharpen(out_image, request.sharpen)
+        out_image = self._maybe_restore_text(request, source_image, out_image)
         output_format = resolve_output_format(request.format, request.content_type)
         data, content_type = encode_image(out_image, output_format)
 
@@ -155,9 +191,7 @@ class MangaJaNaiProvider(UpscaleProvider):
         )
 
     @staticmethod
-    def _size_input_for_output(
-        image: Image.Image, max_size: int, scale: int
-    ) -> Image.Image:
+    def _size_input_for_output(image: Image.Image, max_size: int, scale: int) -> Image.Image:
         target = max(1, max_size // max(1, scale))
         longest = max(image.size)
         if longest <= target:
@@ -185,9 +219,35 @@ class MangaJaNaiProvider(UpscaleProvider):
         amount = request_sharpen if request_sharpen and request_sharpen > 0 else self._sharpen
         if amount <= 0:
             return image
-        return image.filter(
-            ImageFilter.UnsharpMask(radius=2, percent=int(amount), threshold=2)
+        return image.filter(ImageFilter.UnsharpMask(radius=2, percent=int(amount), threshold=2))
+
+    def _build_text_restorer(self) -> TextRestorer:
+        spec = spec_for_name(self._text_model_name) or custom_spec(self._text_model_name, TEXT, 4)
+        return TextRestorer(
+            models_dir=self._models_dir,
+            backend=self._backend,
+            spec=spec,
+            ocr_url=self._text_ocr_url,
+            ocr_token=os.environ.get("YOMIFIN_UPSCALE_OCR_TOKEN", "").strip(),
+            ocr_provider=os.environ.get("YOMIFIN_UPSCALE_OCR_PROVIDER", "").strip(),
+            ocr_language=(os.environ.get("YOMIFIN_UPSCALE_OCR_LANGUAGE", "").strip() or "ja"),
+            ocr_timeout=_env_float("YOMIFIN_UPSCALE_OCR_TIMEOUT_SECONDS", 300.0),
+            allow_download=self._allow_download,
         )
+
+    def _maybe_restore_text(
+        self, request: UpscaleRequest, source: Image.Image, target: Image.Image
+    ) -> Image.Image:
+        enabled = request.text_restore
+        if enabled is None:
+            enabled = self._text_restore_default
+        if not enabled or not self._text_restorer.configured():
+            return target
+        try:
+            return self._text_restorer.restore(source, target, language=request.text_language)
+        except Exception:
+            _logger.warning("Text restoration failed; using the plain upscale.", exc_info=True)
+            return target
 
     def _cap_input_height(self, image: Image.Image) -> Image.Image:
         cap = self._max_input_height

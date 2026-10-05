@@ -68,6 +68,11 @@ let
         export YOMIFIN_UPSCALE_TOKEN
       ''}
 
+      ${optionalString (cfg.ocrTokenFile != null) ''
+        YOMIFIN_UPSCALE_OCR_TOKEN="$(cat ${lib.escapeShellArg cfg.ocrTokenFile})"
+        export YOMIFIN_UPSCALE_OCR_TOKEN
+      ''}
+
       exec "$VENV_DIR/bin/uvicorn" service.app:app \
         --app-dir "$SOURCE" \
         --host ${lib.escapeShellArg cfg.host} \
@@ -167,6 +172,45 @@ in
         world-readable Nix store, which would leak the secret.
       '';
     };
+
+    textRestore = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Re-run a text super-resolution model over OCR-detected lettering so
+        speech bubbles stay crisp after upscaling. Detection uses the
+        yomifin-ocr sidecar; the upscale host must be able to reach `ocrUrl`.
+      '';
+    };
+
+    ocrUrl = mkOption {
+      type = types.str;
+      default = "http://127.0.0.1:8642";
+      description = ''
+        Base URL of the yomifin-ocr sidecar as seen from this host, used to
+        detect text regions for lettering restoration.
+      '';
+    };
+
+    ocrLanguage = mkOption {
+      type = types.str;
+      default = "ja";
+      description = ''
+        Default OCR language for text detection when the job does not specify
+        one (e.g. ja, zh-Hans, en).
+      '';
+    };
+
+    ocrTokenFile = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      example = "/run/secrets/yomifin-ocr-token";
+      description = ''
+        Path (as a string) to a file containing the OCR sidecar bearer token,
+        exported as YOMIFIN_UPSCALE_OCR_TOKEN. Required when the OCR sidecar
+        enforces auth. Use a string, not a path literal.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -201,6 +245,9 @@ in
           YOMIFIN_UPSCALE_MAX_INPUT_HEIGHT = toString cfg.maxInputHeight;
           YOMIFIN_UPSCALE_MAX_OUTPUT_SIZE = "4096";
           YOMIFIN_UPSCALE_SHARPEN = "150";
+          YOMIFIN_UPSCALE_TEXT_RESTORE = if cfg.textRestore then "1" else "0";
+          YOMIFIN_UPSCALE_OCR_URL = cfg.ocrUrl;
+          YOMIFIN_UPSCALE_OCR_LANGUAGE = cfg.ocrLanguage;
           PATH = lib.makeBinPath [
             pkgs.uv
             pkgs.python3
