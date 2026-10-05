@@ -44,6 +44,7 @@ class MangaJaNaiProvider(UpscaleProvider):
         self._backend = backend if backend is not None else SpandrelBackend()
         self._allow_download = allow_download
         self._max_input_height = _env_int("YOMIFIN_UPSCALE_MAX_INPUT_HEIGHT", 0)
+        self._max_output_size = _env_int("YOMIFIN_UPSCALE_MAX_OUTPUT_SIZE", 0)
 
     def is_available(self) -> bool:
         try:
@@ -79,6 +80,7 @@ class MangaJaNaiProvider(UpscaleProvider):
             "backend": self._backend.describe(),
             "models_dir": str(self._models_dir),
             "max_input_height": self._max_input_height,
+            "max_output_size": self._max_output_size,
             "auto_download": (
                 self._allow_download
                 if self._allow_download is not None
@@ -121,6 +123,7 @@ class MangaJaNaiProvider(UpscaleProvider):
         out_image = (
             Image.fromarray(output) if output.ndim == 2 else Image.fromarray(output, "RGB")
         )
+        out_image = self._cap_output_size(out_image, request.max_size)
         output_format = resolve_output_format(request.format, request.content_type)
         data, content_type = encode_image(out_image, output_format)
 
@@ -136,6 +139,19 @@ class MangaJaNaiProvider(UpscaleProvider):
             height=out_image.height,
             input_width=image.width,
             input_height=image.height,
+        )
+
+    def _cap_output_size(self, image: Image.Image, request_max: int) -> Image.Image:
+        max_size = request_max if request_max and request_max > 0 else self._max_output_size
+        if max_size <= 0:
+            return image
+        longest = max(image.size)
+        if longest <= max_size:
+            return image
+        factor = max_size / longest
+        return image.resize(
+            (max(1, round(image.width * factor)), max(1, round(image.height * factor))),
+            Image.LANCZOS,
         )
 
     def _cap_input_height(self, image: Image.Image) -> Image.Image:

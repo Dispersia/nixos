@@ -14,6 +14,7 @@ class UpscaleRequest:
     model: str | None = None
     scale: int = DEFAULT_SCALE
     format: str = FORMAT_PRESERVE  # preserve | png | jpeg | webp
+    max_size: int = 0  # longest output side in px; 0 = the model's native size
 
 
 @dataclass

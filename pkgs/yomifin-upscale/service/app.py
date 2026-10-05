@@ -152,6 +152,15 @@ def _normalize_format(value: str | None) -> str:
     return fmt if fmt in VALID_FORMATS else FORMAT_PRESERVE
 
 
+def _normalize_max_size(value: str | None) -> int:
+    raw = (value or "").strip()
+    try:
+        size = int(raw)
+    except ValueError:
+        return 0
+    return size if size > 0 else 0
+
+
 @app.exception_handler(PayloadTooLarge)
 async def _payload_too_large_handler(request: Request, exc: PayloadTooLarge) -> JSONResponse:
     return JSONResponse(
@@ -256,6 +265,7 @@ async def upscale(request: Request) -> Response:
         model=(request.headers.get("x-model") or "").strip() or None,
         scale=_normalize_scale(request.headers.get("x-scale")),
         format=_normalize_format(request.headers.get("x-format")),
+        max_size=_normalize_max_size(request.headers.get("x-max-size")),
     )
 
     try:
