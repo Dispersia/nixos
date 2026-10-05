@@ -54,6 +54,19 @@ MANGA_2X: dict[int, str] = {
 
 ILLUSTRATION_4X = "4x_IllustrationJaNai_V1_ESRGAN_135k.pth"
 
+# Direct-download (non-bundle) models. SPAN is a modern, lightweight
+# super-resolution architecture that is far faster than RRDB on Apple Silicon.
+SPAN_MODERN_2X = "2x_ModernSpanimationV1.pth"
+SPAN_MODERN_2X_URL = (
+    "https://huggingface.co/nuriyoo/openmodeldb-mirror/resolve/main/"
+    "models/2x-ModernSpanimationV1/2x_ModernSpanimationV1.pth?download=true"
+)
+SPAN_PBRIFY_4X = "4x-PBRify_UpscalerSPANV4.pth"
+SPAN_PBRIFY_4X_URL = (
+    "https://huggingface.co/nuriyoo/openmodeldb-mirror/resolve/main/"
+    "models/4x-PBRify-UpscalerSPANV4/4x-PBRify_UpscalerSPANV4.pth?download=true"
+)
+
 
 @dataclass(frozen=True)
 class ModelSpec:
@@ -62,6 +75,7 @@ class ModelSpec:
     scale: int
     height: int | None = None  # source-height bucket for MANGA models
     bundle: str | None = None
+    url: str | None = None  # direct file download for single-file models
 
     def to_dict(self) -> dict:
         return {
@@ -70,6 +84,7 @@ class ModelSpec:
             "scale": self.scale,
             "height": self.height,
             "bundle": self.bundle,
+            "url": self.url,
         }
 
 
@@ -81,6 +96,12 @@ def _build_known_models() -> dict[str, ModelSpec]:
         models[name] = ModelSpec(name, MANGA, 2, height, MANGA_BUNDLE)
     models[ILLUSTRATION_4X] = ModelSpec(
         ILLUSTRATION_4X, ILLUSTRATION, 4, None, ILLUSTRATION_BUNDLE
+    )
+    models[SPAN_MODERN_2X] = ModelSpec(
+        SPAN_MODERN_2X, ILLUSTRATION, 2, None, None, SPAN_MODERN_2X_URL
+    )
+    models[SPAN_PBRIFY_4X] = ModelSpec(
+        SPAN_PBRIFY_4X, ILLUSTRATION, 4, None, None, SPAN_PBRIFY_4X_URL
     )
     return models
 
@@ -160,7 +181,8 @@ def ensure_model(
         allow_download = auto_download_enabled()
 
     bundle = spec.bundle or bundle_for(spec.name)
-    if bundle is None or bundle not in BUNDLE_URLS:
+    direct_url = spec.url
+    if not direct_url and (bundle is None or bundle not in BUNDLE_URLS):
         raise ModelUnavailable(
             f"Model '{spec.name}' is not present in {models_dir} and no download source "
             "is known for it. Place the file in the models directory or install it "
@@ -177,17 +199,25 @@ def ensure_model(
         if _is_real_file(target):
             return target
         models_dir.mkdir(parents=True, exist_ok=True)
-        archive = _bundle_archive(bundle, models_dir, opener)
-        extracted = _extract_member(archive, Path(spec.name).name, models_dir)
-        if extracted is None:
-            # The cached archive may be stale or truncated; refresh it once.
-            _remove_file(archive)
+
+        if direct_url:
+            _logger.info("Downloading model '%s' from %s", spec.name, direct_url)
+            partial = target.with_suffix(target.suffix + ".part")
+            _remove_file(partial)
+            _download(direct_url, partial, opener)
+            shutil.move(str(partial), str(target))
+        else:
             archive = _bundle_archive(bundle, models_dir, opener)
             extracted = _extract_member(archive, Path(spec.name).name, models_dir)
-        if extracted is None:
-            raise ModelUnavailable(
-                f"'{spec.name}' was not found inside the downloaded bundle {bundle}."
-            )
+            if extracted is None:
+                # The cached archive may be stale or truncated; refresh it once.
+                _remove_file(archive)
+                archive = _bundle_archive(bundle, models_dir, opener)
+                extracted = _extract_member(archive, Path(spec.name).name, models_dir)
+            if extracted is None:
+                raise ModelUnavailable(
+                    f"'{spec.name}' was not found inside the downloaded bundle {bundle}."
+                )
 
     if not _is_real_file(target):
         raise ModelUnavailable(f"Model '{spec.name}' could not be materialised.")
