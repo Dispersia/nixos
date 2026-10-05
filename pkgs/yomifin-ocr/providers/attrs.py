@@ -1,17 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Iterable
-
-
-def iter_candidates(value: Any) -> Iterable[Any]:
-    if value is None:
-        return
-    if isinstance(value, (list, tuple)):
-        for item in value:
-            if item is not None:
-                yield item
-        return
-    yield value
+from typing import Any
 
 
 def get_attr(obj: Any, *names: str) -> Any:

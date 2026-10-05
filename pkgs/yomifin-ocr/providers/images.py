@@ -4,6 +4,14 @@ from typing import Any
 
 from .errors import ProviderUnavailable
 
+MAX_IMAGE_PIXELS = 100_000_000
+
+
+def configure_decompression_bomb() -> None:
+    from PIL import Image
+
+    Image.MAX_IMAGE_PIXELS = MAX_IMAGE_PIXELS
+
 
 def decode_image_to_ndarray(image: bytes) -> Any:
     try:
@@ -17,6 +25,8 @@ def decode_image_to_ndarray(image: bytes) -> Any:
     from io import BytesIO
 
     from PIL import Image
+
+    configure_decompression_bomb()
 
     with Image.open(BytesIO(image)) as opened:
         rgb = opened.convert("RGB")

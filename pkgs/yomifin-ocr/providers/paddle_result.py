@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Iterator
+from collections.abc import Iterator
+from typing import Any
 
 from .attrs import get_attr
 from .errors import OcrError
@@ -24,6 +25,15 @@ def run_engine(engine: Any, array: Any) -> Any:
     raise OcrError("PaddleOCR engine exposes neither .ocr() nor .predict().")
 
 
+def _has_points(points: Any) -> bool:
+    if points is None:
+        return False
+    try:
+        return len(points) > 0
+    except TypeError:
+        return True
+
+
 def parse_paddle_result(raw: Any) -> Iterator[tuple[Any, str, Any]]:
     if raw is None:
         return
@@ -35,6 +45,8 @@ def parse_paddle_result(raw: Any) -> Iterator[tuple[Any, str, Any]]:
             polys = get_attr(page, "rec_polys", "dt_polys", "rec_boxes") or []
             for index, text in enumerate(texts):
                 points = polys[index] if index < len(polys) else None
+                if not _has_points(points):
+                    continue
                 score = scores[index] if index < len(scores) else None
                 yield points, str(text), score
             continue
@@ -44,6 +56,8 @@ def parse_paddle_result(raw: Any) -> Iterator[tuple[Any, str, Any]]:
                 if not isinstance(line, (list, tuple)) or len(line) < 2:
                     continue
                 points = line[0]
+                if not _has_points(points):
+                    continue
                 rest = line[1]
                 if isinstance(rest, (list, tuple)):
                     text = rest[0] if rest else ""

@@ -1,11 +1,8 @@
-
-
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
-from .base import OcrProvider, ProviderUnavailable, is_japanese, normalize_language
-
+from .base import OcrProvider, ProviderUnavailable, is_japanese
 
 DEFAULT_PROVIDER = "paddleocr"
 
@@ -24,15 +21,10 @@ ALIASES: dict[str, str] = {
 
 
 class ProviderRegistry:
-
-
     def __init__(self, providers: Iterable[OcrProvider] = ()) -> None:
         self._providers: dict[str, OcrProvider] = {}
         for provider in providers:
             self._providers[provider.name] = provider
-
-
-
 
     @property
     def names(self) -> list[str]:
@@ -60,19 +52,11 @@ class ProviderRegistry:
         except Exception:
             return False
 
-    def available(self) -> list[OcrProvider]:
-        return [provider for provider in self._providers.values() if self.is_available(provider.name)]
-
     def describe(self) -> list[dict]:
-
 
         return [provider.describe() for provider in self._providers.values()]
 
-
-
-
     def select(self, provider: str | None = None, language: str | None = None) -> OcrProvider:
-
 
         requested = (provider or "").strip().lower()
         if requested:
@@ -84,8 +68,6 @@ class ProviderRegistry:
                 )
             if self.is_available(requested):
                 return candidate
-
-
 
             fallback = self._select_default(language)
             if fallback is not None:
@@ -108,13 +90,13 @@ class ProviderRegistry:
 
     def _select_default(self, language: str | None) -> OcrProvider | None:
 
-
-        preferred = (JAPANESE_PROVIDER, DEFAULT_PROVIDER) if is_japanese(language) else (DEFAULT_PROVIDER,)
+        preferred = (
+            (JAPANESE_PROVIDER, DEFAULT_PROVIDER) if is_japanese(language) else (DEFAULT_PROVIDER,)
+        )
         for name in preferred:
             candidate = self.get(name)
             if candidate is not None and self.is_available(name):
                 return candidate
-
 
         for candidate in self._providers.values():
             if self.is_available(candidate.name):
@@ -122,18 +104,8 @@ class ProviderRegistry:
 
         return None
 
-    def selection_reason(self, provider: str | None, language: str | None) -> str:
-
-
-        if provider:
-            return f"explicit:{provider.strip().lower()}"
-        if is_japanese(language):
-            return f"japanese:{normalize_language(language)}"
-        return f"default:{normalize_language(language)}"
-
 
 def build_registry() -> ProviderRegistry:
-
 
     from .manga_ocr import MangaOcrProvider
     from .paddle_ocr import PaddleOcrProvider

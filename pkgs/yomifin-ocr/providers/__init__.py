@@ -1,5 +1,3 @@
-
-
 from .base import (
     HORIZONTAL,
     UNKNOWN,
@@ -18,16 +16,16 @@ from .registry import (
 )
 
 __all__ = [
+    "DEFAULT_PROVIDER",
     "HORIZONTAL",
+    "JAPANESE_PROVIDER",
     "UNKNOWN",
     "VERTICAL",
     "OcrError",
     "OcrProvider",
     "OcrRegion",
     "OcrResult",
-    "ProviderUnavailable",
-    "DEFAULT_PROVIDER",
-    "JAPANESE_PROVIDER",
     "ProviderRegistry",
+    "ProviderUnavailable",
     "build_registry",
 ]

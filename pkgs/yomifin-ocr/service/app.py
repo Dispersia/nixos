@@ -1,24 +1,25 @@
-
-
 from __future__ import annotations
 
+import asyncio
+import functools
+import hmac
 import io
+import logging
 import os
 import sys
 from pathlib import Path
 from typing import Any
 
+import anyio
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
-from starlette.concurrency import run_in_threadpool
-
-
 
 _PACKAGE_ROOT = Path(__file__).resolve().parent.parent
 if str(_PACKAGE_ROOT) not in sys.path:
     sys.path.insert(0, str(_PACKAGE_ROOT))
 
 from providers.base import OcrResult, ProviderUnavailable
+from providers.images import MAX_IMAGE_PIXELS, configure_decompression_bomb
 from providers.registry import (
     DEFAULT_PROVIDER,
     JAPANESE_PROVIDER,
@@ -26,19 +27,36 @@ from providers.registry import (
     build_registry,
 )
 
-APP_VERSION = "0.1.0"
+DEFAULT_MAX_BYTES = 64 * 1024 * 1024
+DEFAULT_TIMEOUT_SECONDS = 300.0
+
+
+def _package_version() -> str:
+    try:
+        from importlib.metadata import version
+
+        return version("yomifin-ocr")
+    except Exception:
+        return "0.0.0"
+
+
+APP_VERSION = _package_version()
 
 app = FastAPI(title="yomifin-ocr", version=APP_VERSION)
 
 
+class PayloadTooLarge(Exception):
+    pass
+
+
+class OcrTimeout(Exception):
+    pass
 
 
 _registry: ProviderRegistry | None = None
 
 
 def get_registry() -> ProviderRegistry:
-
-
     global _registry
     if _registry is None:
         _registry = build_registry()
@@ -46,13 +64,38 @@ def get_registry() -> ProviderRegistry:
 
 
 def set_registry(registry: ProviderRegistry | None) -> None:
-
-
     global _registry
     _registry = registry
 
 
+def _env_int(name: str, default: int) -> int:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        return default
+    return value if value > 0 else default
 
+
+def _env_float(name: str, default: float) -> float:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        value = float(raw)
+    except ValueError:
+        return default
+    return value if value > 0 else default
+
+
+def _max_bytes() -> int:
+    return _env_int("YOMIFIN_OCR_MAX_BYTES", DEFAULT_MAX_BYTES)
+
+
+def _timeout_seconds() -> float:
+    return _env_float("YOMIFIN_OCR_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS)
 
 
 def _configured_token() -> str:
@@ -64,16 +107,31 @@ def _check_auth(request: Request) -> None:
     if not token:
         return
     header = request.headers.get("authorization", "")
-    if header != f"Bearer {token}":
+    scheme, _, value = header.partition(" ")
+    if scheme.strip().lower() != "bearer" or not hmac.compare_digest(value.strip(), token):
         raise HTTPException(status_code=401, detail="Missing or invalid bearer token.")
 
 
+async def _read_body_limited(request: Request, limit: int) -> bytes:
+    declared = request.headers.get("content-length")
+    if declared:
+        try:
+            if int(declared) > limit:
+                raise PayloadTooLarge("Request body exceeds the configured size limit.")
+        except ValueError:
+            pass
 
+    chunks: list[bytes] = []
+    total = 0
+    async for chunk in request.stream():
+        total += len(chunk)
+        if total > limit:
+            raise PayloadTooLarge("Request body exceeds the configured size limit.")
+        chunks.append(chunk)
+    return b"".join(chunks)
 
 
 def _read_image_dimensions(body: bytes) -> tuple[int, int]:
-
-
     if not body:
         raise HTTPException(
             status_code=400,
@@ -83,8 +141,16 @@ def _read_image_dimensions(body: bytes) -> tuple[int, int]:
     try:
         from PIL import Image
 
+        configure_decompression_bomb()
         with Image.open(io.BytesIO(body)) as image:
             width, height = image.size
+            if width <= 0 or height <= 0:
+                raise HTTPException(status_code=400, detail="Decoded image has invalid dimensions.")
+            if width * height > MAX_IMAGE_PIXELS:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Decoded image exceeds the maximum supported pixel count.",
+                )
             image.load()
     except HTTPException:
         raise
@@ -94,8 +160,6 @@ def _read_image_dimensions(body: bytes) -> tuple[int, int]:
             detail="Could not decode the request body as an image.",
         ) from exc
 
-    if width <= 0 or height <= 0:
-        raise HTTPException(status_code=400, detail="Decoded image has invalid dimensions.")
     return int(width), int(height)
 
 
@@ -104,8 +168,6 @@ def _serialize(
     fallback_width: int,
     fallback_height: int,
 ) -> dict[str, Any]:
-
-
     width = result.width if result.width and result.width > 0 else fallback_width
     height = result.height if result.height and result.height > 0 else fallback_height
 
@@ -118,6 +180,8 @@ def _serialize(
                 "confidence": None if region.confidence is None else float(region.confidence),
                 "direction": region.direction or "unknown",
                 "language": region.language,
+                "sentence": region.sentence if region.sentence is not None else (region.text or ""),
+                "sentence_offset": int(region.sentence_offset or 0),
             }
         )
 
@@ -132,7 +196,20 @@ def _serialize(
     }
 
 
+@app.exception_handler(PayloadTooLarge)
+async def _payload_too_large_handler(request: Request, exc: PayloadTooLarge) -> JSONResponse:
+    return JSONResponse(
+        status_code=413,
+        content={"error": "payload_too_large", "message": str(exc)},
+    )
 
+
+@app.exception_handler(OcrTimeout)
+async def _ocr_timeout_handler(request: Request, exc: OcrTimeout) -> JSONResponse:
+    return JSONResponse(
+        status_code=504,
+        content={"error": "ocr_timeout", "message": str(exc)},
+    )
 
 
 @app.exception_handler(ProviderUnavailable)
@@ -145,13 +222,15 @@ async def _provider_unavailable_handler(request: Request, exc: ProviderUnavailab
 
 @app.exception_handler(Exception)
 async def _unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    logging.exception("Unhandled error while serving %s", request.url.path)
     return JSONResponse(
         status_code=500,
-        content={"error": "internal_error", "message": str(exc)},
+        content={
+            "error": "internal_error",
+            "message": "Internal server error.",
+            "exception": type(exc).__name__,
+        },
     )
-
-
-
 
 
 @app.get("/")
@@ -164,14 +243,14 @@ async def root() -> dict[str, Any]:
 
 
 @app.get("/health")
-async def health() -> dict[str, Any]:
+async def health() -> JSONResponse:
     registry = get_registry()
-    return {
-        "status": "ok",
-        "providers": {
-            provider.name: registry.is_available(provider.name) for provider in registry.all()
-        },
-    }
+    providers = {provider.name: registry.is_available(provider.name) for provider in registry.all()}
+    available = any(providers.values())
+    return JSONResponse(
+        status_code=200 if available else 503,
+        content={"status": "ok" if available else "unavailable", "providers": providers},
+    )
 
 
 @app.get("/providers")
@@ -193,20 +272,33 @@ async def ocr(request: Request) -> JSONResponse:
     language = (request.headers.get("x-language") or "auto").strip() or "auto"
     provider_name = (request.headers.get("x-provider") or "").strip() or None
 
-    body = await request.body()
+    body = await _read_body_limited(request, _max_bytes())
     fallback_width, fallback_height = _read_image_dimensions(body)
-
 
     provider = registry.select(provider=provider_name, language=language)
 
     try:
-        result = await run_in_threadpool(provider.recognize, body, content_type, language)
+        result = await asyncio.wait_for(
+            anyio.to_thread.run_sync(
+                functools.partial(provider.recognize, body, content_type, language),
+                abandon_on_cancel=True,
+            ),
+            timeout=_timeout_seconds(),
+        )
+    except TimeoutError as exc:
+        logging.warning("OCR provider %s timed out", provider.name)
+        raise OcrTimeout("OCR engine exceeded the configured timeout.") from exc
     except ProviderUnavailable:
         raise
     except Exception as exc:
+        logging.exception("OCR provider %s failed", provider.name)
         return JSONResponse(
             status_code=500,
-            content={"error": "ocr_failed", "message": str(exc)},
+            content={
+                "error": "ocr_failed",
+                "message": "OCR engine failed.",
+                "exception": type(exc).__name__,
+            },
         )
 
     return JSONResponse(_serialize(result, fallback_width, fallback_height))

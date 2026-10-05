@@ -7,3 +7,7 @@ UNKNOWN = "unknown"
 JAPANESE_CODES = frozenset({"ja", "jp", "jpn", "japanese", "ja-jp", "ja_jp"})
 
 VERTICAL_ASPECT_THRESHOLD = 1.5
+
+MAX_REGIONS_PER_PAGE = 4096
+
+MAX_POLYGON_POINTS = 64

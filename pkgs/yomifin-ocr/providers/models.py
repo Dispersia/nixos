@@ -4,8 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any
 
-from .constants import UNKNOWN
-from .language import normalize_language
+from .constants import MAX_POLYGON_POINTS, MAX_REGIONS_PER_PAGE, UNKNOWN
 
 
 @dataclass
@@ -15,6 +14,18 @@ class OcrRegion:
     confidence: float | None = None
     direction: str = UNKNOWN
     language: str | None = None
+    # The full sentence this region belongs to (joined across wrapped columns /
+    # lines in reading order) and this region's character offset within it. The
+    # region keeps its own polygon/text so it can still be rendered and clicked.
+    sentence: str | None = None
+    sentence_offset: int = 0
+
+
+def cap_regions(regions: list[OcrRegion]) -> list[OcrRegion]:
+    del regions[MAX_REGIONS_PER_PAGE:]
+    for region in regions:
+        del region.polygon[MAX_POLYGON_POINTS:]
+    return regions
 
 
 @dataclass
@@ -26,6 +37,9 @@ class OcrResult:
     width: int
     height: int
     regions: list[OcrRegion] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        self.regions = cap_regions(self.regions)
 
 
 class OcrProvider(ABC):
@@ -43,12 +57,6 @@ class OcrProvider(ABC):
     @abstractmethod
     def recognize(self, image: bytes, content_type: str, language: str) -> OcrResult:
         raise NotImplementedError
-
-    def supports_language(self, language: str | None) -> bool:
-        lang = normalize_language(language)
-        if lang in ("", "auto"):
-            return True
-        return not self.languages or lang in self.languages
 
     def describe(self) -> dict[str, Any]:
         return {

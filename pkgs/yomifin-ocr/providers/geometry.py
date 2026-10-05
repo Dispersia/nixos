@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from .constants import HORIZONTAL, UNKNOWN, VERTICAL, VERTICAL_ASPECT_THRESHOLD
-
-
-def clamp01(value: float) -> float:
-    return max(0.0, min(1.0, float(value)))
 
 
 def coerce_point(value: Any) -> list[float] | None:
@@ -55,15 +52,15 @@ def coerce_points(value: Any) -> list[list[float]]:
         except Exception:
             return []
 
-    if isinstance(value, (list, tuple)) and value and all(
-        isinstance(item, (int, float)) and not isinstance(item, bool) for item in value
+    if (
+        isinstance(value, (list, tuple))
+        and value
+        and all(isinstance(item, (int, float)) and not isinstance(item, bool) for item in value)
     ):
         if len(value) == 4:
             return polygon_from_box(value[0], value[1], value[2], value[3])
         if len(value) >= 6 and len(value) % 2 == 0:
-            return [
-                [float(value[i]), float(value[i + 1])] for i in range(0, len(value), 2)
-            ]
+            return [[float(value[i]), float(value[i + 1])] for i in range(0, len(value), 2)]
         return []
 
     points: list[list[float]] = []
@@ -93,7 +90,9 @@ def bounding_box(points: Sequence[Sequence[float]]) -> tuple[float, float, float
     return min(xs), min(ys), max(xs), max(ys)
 
 
-def infer_direction(width: float, height: float, threshold: float = VERTICAL_ASPECT_THRESHOLD) -> str:
+def infer_direction(
+    width: float, height: float, threshold: float = VERTICAL_ASPECT_THRESHOLD
+) -> str:
     if width <= 0 or height <= 0:
         return UNKNOWN
     return VERTICAL if height > width * threshold else HORIZONTAL

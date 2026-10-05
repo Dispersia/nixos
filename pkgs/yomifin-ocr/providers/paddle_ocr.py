@@ -14,9 +14,10 @@ from .base import (
     module_available,
     ndarray_dimensions,
     package_version,
-    polygon_from_box,
 )
 from .line_merge import merge_line_regions
+from .sentences import assign_sentences
+from .locking import EngineLockMixin
 from .paddle_result import coerce_confidence, parse_paddle_result, run_engine
 
 _PADDLE_LANGUAGES: dict[str, str] = {
@@ -67,7 +68,7 @@ _SUPPORTED_LANGUAGES = (
 )
 
 
-class PaddleOcrProvider(OcrProvider):
+class PaddleOcrProvider(EngineLockMixin, OcrProvider):
     name = "paddleocr"
     provider_version = "0.1.0"
     languages = _SUPPORTED_LANGUAGES
@@ -135,9 +136,7 @@ class PaddleOcrProvider(OcrProvider):
             except Exception as exc:
                 last_error = exc
                 continue
-        raise ProviderUnavailable(
-            f"PaddleOCR is installed but failed to initialise: {last_error}"
-        )
+        raise ProviderUnavailable(f"PaddleOCR is installed but failed to initialise: {last_error}")
 
     def _get_engine(self, language: str) -> Any:
         key = self._paddle_language(language) or "__default__"
@@ -146,45 +145,44 @@ class PaddleOcrProvider(OcrProvider):
         return self._engines[key]
 
     def recognize(self, image: bytes, content_type: str, language: str) -> OcrResult:
-        engine = self._get_engine(language)
-        array = decode_image_to_ndarray(image)
-        width, height = ndarray_dimensions(array)
+        with self.engine_lock.guard():
+            engine = self._get_engine(language)
+            array = decode_image_to_ndarray(image)
+            width, height = ndarray_dimensions(array)
 
-        try:
-            raw = run_engine(engine, array)
-        except Exception as exc:
-            raise OcrError(f"PaddleOCR failed to process the image: {exc}") from exc
+            try:
+                raw = run_engine(engine, array)
+            except Exception as exc:
+                raise OcrError(f"PaddleOCR failed to process the image: {exc}") from exc
 
-        regions: list[OcrRegion] = []
-        for points, text, score in parse_paddle_result(raw):
-            text = (text or "").strip()
-            if not text:
-                continue
-            polygon = coerce_points(points)
-            if len(polygon) < 3:
-                if width > 0 and height > 0:
-                    polygon = polygon_from_box(0, 0, width, height)
-                else:
+            regions: list[OcrRegion] = []
+            for points, text, score in parse_paddle_result(raw):
+                text = (text or "").strip()
+                if not text:
+                    continue
+                polygon = coerce_points(points)
+                if len(polygon) < 3:
                     continue
 
-            regions.append(
-                OcrRegion(
-                    polygon=polygon,
-                    text=text,
-                    confidence=coerce_confidence(score),
-                    direction=direction_for_polygon(polygon, None),
-                    language=language if language and language != "auto" else None,
+                regions.append(
+                    OcrRegion(
+                        polygon=polygon,
+                        text=text,
+                        confidence=coerce_confidence(score),
+                        direction=direction_for_polygon(polygon, None),
+                        language=language if language and language != "auto" else None,
+                    )
                 )
+
+            regions = merge_line_regions(regions, language)
+            regions = assign_sentences(regions, language)
+
+            return OcrResult(
+                provider=self.name,
+                provider_version=self.provider_version,
+                model_version=self.model_version,
+                language=language or "auto",
+                width=width,
+                height=height,
+                regions=regions,
             )
-
-        regions = merge_line_regions(regions, language)
-
-        return OcrResult(
-            provider=self.name,
-            provider_version=self.provider_version,
-            model_version=self.model_version,
-            language=language or "auto",
-            width=width,
-            height=height,
-            regions=regions,
-        )

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .attrs import get_attr, iter_candidates
+from .attrs import get_attr
 from .availability import module_available, package_version
 from .constants import (
     HORIZONTAL,
@@ -12,7 +12,6 @@ from .constants import (
 from .errors import OcrError, ProviderUnavailable
 from .geometry import (
     bounding_box,
-    clamp01,
     coerce_point,
     coerce_points,
     direction_for_polygon,
@@ -31,24 +30,22 @@ __all__ = [
     "VERTICAL",
     "VERTICAL_ASPECT_THRESHOLD",
     "OcrError",
-    "ProviderUnavailable",
     "OcrProvider",
     "OcrRegion",
     "OcrResult",
+    "ProviderUnavailable",
     "bounding_box",
-    "clamp01",
     "coerce_point",
     "coerce_points",
-    "direction_for_polygon",
-    "infer_direction",
-    "normalize_direction",
-    "polygon_from_box",
     "decode_image_to_ndarray",
-    "ndarray_dimensions",
-    "is_japanese",
-    "normalize_language",
+    "direction_for_polygon",
     "get_attr",
-    "iter_candidates",
+    "infer_direction",
+    "is_japanese",
     "module_available",
+    "ndarray_dimensions",
+    "normalize_direction",
+    "normalize_language",
     "package_version",
+    "polygon_from_box",
 ]
