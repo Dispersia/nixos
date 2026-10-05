@@ -8,7 +8,7 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter, ImageOps
+from PIL import Image, ImageDraw, ImageFilter
 
 from .models import ModelSpec, ensure_model
 
@@ -163,12 +163,6 @@ class TextRestorer:
             if self._strength < 1.0:
                 native = crop.resize((width, height), Image.LANCZOS).convert(layer.mode)
                 region = Image.blend(native, region, self._strength)
-            # Take only the model's ink and keep the page's own paper/background,
-            # so a restored bubble never shows a tinted rectangle against the
-            # rest of the page (the text looks like the original comic's).
-            existing = layer.crop((left, top, left + width, top + height))
-            ink = ImageOps.invert(region.convert("L"))
-            region = Image.composite(region, existing, ink)
             layer.paste(region, (left, top))
 
         mask = self._build_mask(polygons, source.size, target.size)
