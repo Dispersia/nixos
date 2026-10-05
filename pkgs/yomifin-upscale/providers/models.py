@@ -76,6 +76,16 @@ SPAN_NOMOSUNI_4X_URL = (
     "https://huggingface.co/Phips/4xNomosUni_span_multijpg/resolve/main/"
     "4xNomosUni_span_multijpg.safetensors?download=true"
 )
+SPAN_MODERN_V2 = "2x_ModernSpanimationV2.pth"
+SPAN_MODERN_V2_URL = (
+    "https://github.com/TNTwise/Models/releases/download/"
+    "2x_ModernSpanimationV2/2x_ModernSpanimationV2.pth"
+)
+SPAN_MODERN_V15 = "2x_ModernSpanimationV1.5.pth"
+SPAN_MODERN_V15_URL = (
+    "https://github.com/TNTwise/Models/releases/download/"
+    "2x_ModernSpanimationV1.5/2x_ModernSpanimationV1.5.pth"
+)
 
 
 @dataclass(frozen=True)
@@ -118,6 +128,12 @@ def _build_known_models() -> dict[str, ModelSpec]:
     )
     models[SPAN_NOMOSUNI_4X] = ModelSpec(
         SPAN_NOMOSUNI_4X, ILLUSTRATION, 4, None, None, SPAN_NOMOSUNI_4X_URL
+    )
+    models[SPAN_MODERN_V2] = ModelSpec(
+        SPAN_MODERN_V2, ILLUSTRATION, 2, None, None, SPAN_MODERN_V2_URL
+    )
+    models[SPAN_MODERN_V15] = ModelSpec(
+        SPAN_MODERN_V15, ILLUSTRATION, 2, None, None, SPAN_MODERN_V15_URL
     )
     return models
 

@@ -97,7 +97,10 @@ class MangaJaNaiProvider(UpscaleProvider):
             )
 
         image = normalize_image(decode_image(request.image))
-        image = self._cap_input_height(image)
+        # The input cap is a speed hack for the heavy MangaJaNai auto path; an
+        # explicitly requested model (e.g. SPAN) runs at full resolution.
+        if not request.model:
+            image = self._cap_input_height(image)
         grayscale = is_grayscale(image)
         mode = (
             request.mode
