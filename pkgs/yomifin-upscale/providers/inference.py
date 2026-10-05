@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import threading
+import time
 
 from .availability import module_available, package_version
 from .errors import ProviderUnavailable
@@ -70,6 +71,7 @@ class SpandrelBackend:
             overlap if overlap is not None else _env_int("YOMIFIN_UPSCALE_OVERLAP", DEFAULT_OVERLAP)
         )
         self._fp16 = _env_bool("YOMIFIN_UPSCALE_FP16")
+        self._disable_half = False
         self._models: dict[str, tuple[object, object]] = {}
         self._lock = threading.Lock()
         self._device = None
@@ -89,12 +91,24 @@ class SpandrelBackend:
             "available": self.is_available(),
             "tile": self._tile,
             "overlap": self._overlap,
+            "fp16_requested": self._fp16,
+            "fp16_disabled": self._disable_half,
         }
         if info["available"]:
             try:
-                info["device"] = str(self._get_device())
+                torch, _ = self._lazy()
+                device = self._get_device()
+                info["device"] = str(device)
                 info["torch_version"] = package_version("torch")
                 info["spandrel_version"] = package_version("spandrel")
+                info["mps_fallback_env"] = os.environ.get("PYTORCH_ENABLE_MPS_FALLBACK")
+                if device.type == "mps":
+                    try:
+                        info["mps_driver_allocated_bytes"] = int(
+                            torch.mps.driver_allocated_memory()
+                        )
+                    except Exception:
+                        pass
             except Exception:
                 pass
         return info
@@ -103,15 +117,43 @@ class SpandrelBackend:
         torch, np = self._lazy()
         descriptor, model = self._load(str(model_path))
         device = self._get_device()
-        dtype = self._resolve_dtype(torch, descriptor, device)
+        dtype = self._dtype_for(torch, descriptor, device)
 
         tensor = self._to_tensor(torch, np, array, int(descriptor.input_channels))
         out_channels = int(descriptor.output_channels)
         scale = int(descriptor.scale)
+        started = time.perf_counter()
 
-        with self._lock:
-            output = self._run(torch, model, tensor, scale, out_channels, device, dtype)
-        return self._to_array(np, output, out_channels)
+        try:
+            with self._lock:
+                output = self._run(torch, model, tensor, scale, out_channels, device, dtype)
+        except RuntimeError as exc:
+            if dtype != torch.float16:
+                raise
+            _logger.warning(
+                "fp16 inference failed on %s (%s); retrying in fp32", device, exc
+            )
+            self._disable_half = True
+            dtype = torch.float32
+            with self._lock:
+                self._models.clear()
+                descriptor, model = self._load(str(model_path))
+                output = self._run(torch, model, tensor, scale, out_channels, device, dtype)
+
+        elapsed = time.perf_counter() - started
+        result = self._to_array(np, output, out_channels)
+        _logger.info(
+            "upscaled model=%s device=%s dtype=%s in=%dx%d out=%dx%d in %.2fs",
+            os.path.basename(str(model_path)),
+            device,
+            "fp16" if dtype == torch.float16 else "fp32",
+            int(tensor.shape[3]),
+            int(tensor.shape[2]),
+            int(result.shape[1]),
+            int(result.shape[0]),
+            elapsed,
+        )
+        return result
 
     # -- internals ---------------------------------------------------------
 
@@ -151,27 +193,31 @@ class SpandrelBackend:
                     f"Could not load upscaling model '{path}': {exc}"
                 ) from exc
 
+            device = self._get_device()
+            dtype = self._dtype_for(torch, descriptor, device)
             descriptor.model.eval()
-            model = descriptor.model.to(self._get_device())
+            model = descriptor.model.to(device=device, dtype=dtype)
             entry = (descriptor, model)
             self._models[path] = entry
             _logger.info(
-                "Loaded upscaling model %s (scale %s, %s -> %s channels)",
+                "Loaded upscaling model %s (scale %s, %s -> %s channels, %s, half=%s)",
                 path,
                 descriptor.scale,
                 descriptor.input_channels,
                 descriptor.output_channels,
+                "fp16" if dtype == torch.float16 else "fp32",
+                bool(getattr(descriptor, "supports_half", False)),
             )
             return entry
 
-    def _resolve_dtype(self, torch, descriptor, device):
+    def _dtype_for(self, torch, descriptor, device):
         supports_half = bool(getattr(descriptor, "supports_half", False))
+        if self._disable_half or not supports_half:
+            return torch.float32
         if device.type == "cuda":
-            if self._fp16 is False or not supports_half:
-                return torch.float32
-            return torch.float16
-        if device.type == "mps" and self._fp16 is True and supports_half:
-            return torch.float16
+            return torch.float32 if self._fp16 is False else torch.float16
+        if device.type == "mps":
+            return torch.float16 if self._fp16 is True else torch.float32
         return torch.float32
 
     @staticmethod

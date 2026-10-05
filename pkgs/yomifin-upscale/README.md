@@ -42,7 +42,14 @@ cached under `upscale/models/` (override with `YOMIFIN_UPSCALE_MODELS_DIR`):
 - colour: `IllustrationJaNai_V1_ModelsOnly.zip` — the 4x illustration model.
 
 Automatic downloads can be disabled with `YOMIFIN_UPSCALE_AUTO_DOWNLOAD=0`; drop
-your own `.pth`/`.safetensors` files into the models directory instead.
+your own `.pth`/`.safetensors` files into the models directory instead. Downloaded
+release archives are cached under `models/.bundles/` so a new height bucket does
+not re-download the whole bundle.
+
+> **Apple Silicon performance.** PyTorch MPS is much slower in fp32, and 4x on a
+> ~2000px page is heavy. On a Mac mini set `YOMIFIN_UPSCALE_FP16=1` and
+> `YOMIFIN_UPSCALE_MAX_INPUT_HEIGHT=1600` for a large speedup. Half precision
+> automatically falls back to fp32 if an operator is unsupported.
 
 > The newer V3 IllustrationJaNai models use the `FDAT` architecture, which stock
 > `spandrel` does not ship. The V1/V2 `.pth` models work out of the box.
@@ -80,7 +87,8 @@ histogram). An optional bearer token can be required with
 | `YOMIFIN_UPSCALE_DEVICE`          | auto             | `cuda`, `mps` or `cpu`.                            |
 | `YOMIFIN_UPSCALE_TILE`            | `512`            | Inference tile size (0 disables tiling).           |
 | `YOMIFIN_UPSCALE_OVERLAP`         | `16`             | Tile overlap in pixels.                            |
-| `YOMIFIN_UPSCALE_FP16`            | auto             | Force/disable half precision.                      |
+| `YOMIFIN_UPSCALE_FP16`            | auto             | Force/disable half precision. Set `1` on Apple Silicon (MPS) for a large speedup. |
+| `YOMIFIN_UPSCALE_MAX_INPUT_HEIGHT`| `0`              | Downscale taller pages to this height before upscaling (0 = off). `1600` roughly matches MangaJaNaiConverterGui and cuts MPS work a lot. |
 | `YOMIFIN_UPSCALE_TOKEN`           | (none)           | Require `Authorization: Bearer <token>`.           |
 | `YOMIFIN_UPSCALE_MAX_BYTES`       | `134217728`      | Maximum request body size.                         |
 | `YOMIFIN_UPSCALE_TIMEOUT_SECONDS` | `1200`           | Per-request inference timeout.                     |

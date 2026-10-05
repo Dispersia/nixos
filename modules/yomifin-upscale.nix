@@ -133,6 +133,26 @@ in
       '';
     };
 
+    fp16 = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Run the models in half precision. Much faster on Apple Silicon
+        (Metal/MPS); the sidecar automatically falls back to fp32 if an operator
+        does not support half.
+      '';
+    };
+
+    maxInputHeight = mkOption {
+      type = types.ints.unsigned;
+      default = 1600;
+      description = ''
+        Downscale pages taller than this to this height before upscaling
+        (0 = off). 1600 matches MangaJaNaiConverterGui and substantially cuts
+        the per-page work on MPS.
+      '';
+    };
+
     authTokenFile = mkOption {
       type = types.nullOr types.str;
       default = null;
@@ -177,6 +197,8 @@ in
           HOME = home;
           YOMIFIN_UPSCALE_MODELS_DIR = modelsDir;
           YOMIFIN_UPSCALE_AUTO_DOWNLOAD = if cfg.autoDownloadModels then "1" else "0";
+          YOMIFIN_UPSCALE_FP16 = if cfg.fp16 then "1" else "0";
+          YOMIFIN_UPSCALE_MAX_INPUT_HEIGHT = toString cfg.maxInputHeight;
           PATH = lib.makeBinPath [
             pkgs.uv
             pkgs.python3

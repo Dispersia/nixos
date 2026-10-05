@@ -4,7 +4,6 @@ import json
 import logging
 import os
 import shutil
-import tempfile
 import threading
 import urllib.request
 import zipfile
@@ -178,21 +177,40 @@ def ensure_model(
         if _is_real_file(target):
             return target
         models_dir.mkdir(parents=True, exist_ok=True)
-        url = BUNDLE_URLS[bundle]
-        _logger.info("Downloading %s (bundle %s)", spec.name, bundle)
-        with tempfile.TemporaryDirectory(dir=str(models_dir)) as tmp:
-            archive = Path(tmp) / "bundle.zip"
-            _download(url, archive, opener)
+        archive = _bundle_archive(bundle, models_dir, opener)
+        extracted = _extract_member(archive, Path(spec.name).name, models_dir)
+        if extracted is None:
+            # The cached archive may be stale or truncated; refresh it once.
+            _remove_file(archive)
+            archive = _bundle_archive(bundle, models_dir, opener)
             extracted = _extract_member(archive, Path(spec.name).name, models_dir)
-            if extracted is None:
-                raise ModelUnavailable(
-                    f"'{spec.name}' was not found inside the downloaded bundle "
-                    f"{bundle}."
-                )
+        if extracted is None:
+            raise ModelUnavailable(
+                f"'{spec.name}' was not found inside the downloaded bundle {bundle}."
+            )
 
     if not _is_real_file(target):
         raise ModelUnavailable(f"Model '{spec.name}' could not be materialised.")
     return target
+
+
+def _bundle_archive(bundle: str, models_dir: Path, opener) -> Path:
+    cache_dir = models_dir / ".bundles"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    archive = cache_dir / f"{bundle}.zip"
+    if _is_real_file(archive):
+        return archive
+    url = BUNDLE_URLS[bundle]
+    _logger.info("Downloading model bundle '%s' from %s", bundle, url)
+    _download(url, archive, opener)
+    return archive
+
+
+def _remove_file(path: Path) -> None:
+    try:
+        path.unlink()
+    except OSError:
+        pass
 
 
 def _is_real_file(path: Path) -> bool:

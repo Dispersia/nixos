@@ -14,7 +14,7 @@ from .constants import (
 )
 from .errors import ModelUnavailable, ProviderUnavailable
 from .images import decode_image, encode_image, normalize_image, resolve_output_format
-from .inference import SpandrelBackend
+from .inference import SpandrelBackend, _env_int
 from .models import (
     KNOWN_MODELS,
     auto_download_enabled,
@@ -43,6 +43,7 @@ class MangaJaNaiProvider(UpscaleProvider):
         self._models_dir = Path(models_dir) if models_dir is not None else default_models_dir()
         self._backend = backend if backend is not None else SpandrelBackend()
         self._allow_download = allow_download
+        self._max_input_height = _env_int("YOMIFIN_UPSCALE_MAX_INPUT_HEIGHT", 0)
 
     def is_available(self) -> bool:
         try:
@@ -77,6 +78,7 @@ class MangaJaNaiProvider(UpscaleProvider):
             "provider_version": self.provider_version,
             "backend": self._backend.describe(),
             "models_dir": str(self._models_dir),
+            "max_input_height": self._max_input_height,
             "auto_download": (
                 self._allow_download
                 if self._allow_download is not None
@@ -95,6 +97,7 @@ class MangaJaNaiProvider(UpscaleProvider):
             )
 
         image = normalize_image(decode_image(request.image))
+        image = self._cap_input_height(image)
         grayscale = is_grayscale(image)
         mode = (
             request.mode
@@ -131,6 +134,14 @@ class MangaJaNaiProvider(UpscaleProvider):
             input_width=image.width,
             input_height=image.height,
         )
+
+    def _cap_input_height(self, image: Image.Image) -> Image.Image:
+        cap = self._max_input_height
+        if cap <= 0 or image.height <= cap:
+            return image
+        factor = cap / image.height
+        new_size = (max(1, round(image.width * factor)), cap)
+        return image.resize(new_size, Image.LANCZOS)
 
     def _resolve_spec(self, requested: str | None, mode: str, height: int, scale: int):
         if requested:
