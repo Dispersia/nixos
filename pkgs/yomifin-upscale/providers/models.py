@@ -66,6 +66,16 @@ SPAN_PBRIFY_4X_URL = (
     "https://huggingface.co/nuriyoo/openmodeldb-mirror/resolve/main/"
     "models/4x-PBRify-UpscalerSPANV4/4x-PBRify_UpscalerSPANV4.pth?download=true"
 )
+SPAN_OFFICIAL_4X = "4x-spanx4-ch48.pth"
+SPAN_OFFICIAL_4X_URL = (
+    "https://objectstorage.us-phoenix-1.oraclecloud.com/n/ax6ygfvpvzka/"
+    "b/open-modeldb-files/o/4x-spanx4-ch48.pth"
+)
+SPAN_NOMOSUNI_4X = "4xNomosUni_span_multijpg.safetensors"
+SPAN_NOMOSUNI_4X_URL = (
+    "https://huggingface.co/Phips/4xNomosUni_span_multijpg/resolve/main/"
+    "4xNomosUni_span_multijpg.safetensors?download=true"
+)
 
 
 @dataclass(frozen=True)
@@ -102,6 +112,12 @@ def _build_known_models() -> dict[str, ModelSpec]:
     )
     models[SPAN_PBRIFY_4X] = ModelSpec(
         SPAN_PBRIFY_4X, ILLUSTRATION, 4, None, None, SPAN_PBRIFY_4X_URL
+    )
+    models[SPAN_OFFICIAL_4X] = ModelSpec(
+        SPAN_OFFICIAL_4X, ILLUSTRATION, 4, None, None, SPAN_OFFICIAL_4X_URL
+    )
+    models[SPAN_NOMOSUNI_4X] = ModelSpec(
+        SPAN_NOMOSUNI_4X, ILLUSTRATION, 4, None, None, SPAN_NOMOSUNI_4X_URL
     )
     return models
 
