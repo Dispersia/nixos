@@ -1,0 +1,148 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from PIL import Image
+
+from .base import UpscaleProvider, UpscaleRequest, UpscaleResult
+from .color import is_grayscale
+from .constants import (
+    DEFAULT_MODE,
+    DEFAULT_SCALE,
+    ILLUSTRATION,
+    MANGA,
+)
+from .errors import ModelUnavailable, ProviderUnavailable
+from .images import decode_image, encode_image, normalize_image, resolve_output_format
+from .inference import SpandrelBackend
+from .models import (
+    KNOWN_MODELS,
+    auto_download_enabled,
+    available_model_files,
+    custom_spec,
+    default_models_dir,
+    ensure_model,
+    select_model,
+    spec_for_name,
+)
+
+
+class MangaJaNaiProvider(UpscaleProvider):
+    """Upscales pages with MangaJaNai (B&W) / IllustrationJaNai (color)."""
+
+    name = "mangajanai"
+    provider_version = "0.1.0"
+
+    def __init__(
+        self,
+        *,
+        models_dir: str | Path | None = None,
+        backend: SpandrelBackend | None = None,
+        allow_download: bool | None = None,
+    ) -> None:
+        self._models_dir = Path(models_dir) if models_dir is not None else default_models_dir()
+        self._backend = backend if backend is not None else SpandrelBackend()
+        self._allow_download = allow_download
+
+    def is_available(self) -> bool:
+        try:
+            return bool(self._backend.is_available())
+        except Exception:
+            return False
+
+    def list_models(self) -> list[dict]:
+        present = set(available_model_files(self._models_dir))
+        models = [
+            {**spec.to_dict(), "downloaded": spec.name in present}
+            for spec in KNOWN_MODELS.values()
+        ]
+        for name in sorted(present):
+            if name not in KNOWN_MODELS:
+                models.append(
+                    {
+                        "name": name,
+                        "kind": "custom",
+                        "scale": None,
+                        "height": None,
+                        "bundle": None,
+                        "downloaded": True,
+                    }
+                )
+        return models
+
+    def describe(self) -> dict:
+        return {
+            "name": self.name,
+            "available": bool(self.is_available()),
+            "provider_version": self.provider_version,
+            "backend": self._backend.describe(),
+            "models_dir": str(self._models_dir),
+            "auto_download": (
+                self._allow_download
+                if self._allow_download is not None
+                else auto_download_enabled()
+            ),
+            "default_mode": DEFAULT_MODE,
+            "default_scale": DEFAULT_SCALE,
+            "models": self.list_models(),
+        }
+
+    def upscale(self, request: UpscaleRequest) -> UpscaleResult:
+        if not self.is_available():
+            raise ProviderUnavailable(
+                "The upscaling backend is unavailable. Install PyTorch and spandrel "
+                "with `pip install yomifin-upscale[pytorch]` and restart the sidecar."
+            )
+
+        image = normalize_image(decode_image(request.image))
+        grayscale = is_grayscale(image)
+        mode = (
+            request.mode
+            if request.mode in (MANGA, ILLUSTRATION)
+            else (MANGA if grayscale else ILLUSTRATION)
+        )
+
+        spec = self._resolve_spec(request.model, mode, image.height, request.scale)
+        model_path = ensure_model(
+            spec, self._models_dir, allow_download=self._allow_download
+        )
+
+        import numpy as np
+
+        array = np.asarray(image)
+        output = self._backend.upscale(str(model_path), array)
+
+        out_image = (
+            Image.fromarray(output) if output.ndim == 2 else Image.fromarray(output, "RGB")
+        )
+        output_format = resolve_output_format(request.format, request.content_type)
+        data, content_type = encode_image(out_image, output_format)
+
+        return UpscaleResult(
+            provider=self.name,
+            provider_version=self.provider_version,
+            model=spec.name,
+            mode=mode,
+            scale=spec.scale,
+            image=data,
+            content_type=content_type,
+            width=out_image.width,
+            height=out_image.height,
+            input_width=image.width,
+            input_height=image.height,
+        )
+
+    def _resolve_spec(self, requested: str | None, mode: str, height: int, scale: int):
+        if requested:
+            name = Path(requested).name
+            known = spec_for_name(name)
+            if known is not None:
+                return known
+            if (self._models_dir / name).is_file():
+                return custom_spec(name, mode, scale)
+            raise ModelUnavailable(
+                f"Unknown upscaling model '{name}'. It is neither a known MangaJaNai "
+                "model nor a file in the models directory."
+            )
+
+        return select_model(mode, height, scale)

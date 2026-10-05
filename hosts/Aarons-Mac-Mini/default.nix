@@ -10,6 +10,7 @@
     ../../modules/darwin-system.nix
     ../../modules/comin-darwin.nix
     ../../modules/yomifin-ocr.nix
+    ../../modules/yomifin-upscale.nix
   ];
 
   services.yomifin.ocr = {
@@ -24,6 +25,19 @@
       "yomitoku"
       "paddleocr"
     ];
+  };
+
+  services.yomifin.upscale = {
+    enable = true;
+    user = username;
+    # Same host/port convention as the OCR sidecar. Keep this in sync with the
+    # Jellyfin YomiFin plugin's UpscaleSidecarUrl.
+    host = "192.168.4.45";
+    port = 8643;
+    # Reuses the OCR sidecar's bearer token so there is nothing new to create;
+    # point this at a separate file if you would rather rotate them apart.
+    authTokenFile = "/Users/dispe/.config/yomifin-ocr/token";
+    autoDownloadModels = true;
   };
 
   services.tailscale.enable = true;
