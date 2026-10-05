@@ -75,6 +75,7 @@ class TextRestorer:
         ocr_timeout: float = 300.0,
         context: int = 6,
         feather: float = 1.5,
+        strength: float = 0.7,
         max_regions: int = 512,
         allow_download: bool | None = None,
     ) -> None:
@@ -88,6 +89,7 @@ class TextRestorer:
         self._ocr_timeout = ocr_timeout
         self._context = max(0, context)
         self._feather = max(0.0, feather)
+        self._strength = min(1.0, max(0.0, strength))
         self._max_regions = max(1, max_regions)
         self._allow_download = allow_download
 
@@ -104,6 +106,7 @@ class TextRestorer:
             "ocr_url": self._ocr_url or None,
             "ocr_language": self._ocr_language,
             "ocr_provider": self._ocr_provider or None,
+            "strength": self._strength,
             "available": self.configured(),
         }
 
@@ -153,8 +156,14 @@ class TextRestorer:
             top = round(box.top * scale_y)
             width = max(1, round(box.right * scale_x) - left)
             height = max(1, round(box.bottom * scale_y) - top)
-            region = region.resize((width, height), Image.LANCZOS)
-            layer.paste(region.convert(layer.mode), (left, top))
+            region = region.resize((width, height), Image.LANCZOS).convert(layer.mode)
+            # Blending the model output back toward the native lettering keeps
+            # thin stroke gaps that the text model tends to over-fill on dense
+            # kanji (e.g. 馬), which otherwise read as a blob when bolded.
+            if self._strength < 1.0:
+                native = crop.resize((width, height), Image.LANCZOS).convert(layer.mode)
+                region = Image.blend(native, region, self._strength)
+            layer.paste(region, (left, top))
 
         mask = self._build_mask(polygons, source.size, target.size)
         if mask.getbbox() is None:

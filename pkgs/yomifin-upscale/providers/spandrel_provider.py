@@ -232,6 +232,7 @@ class MangaJaNaiProvider(UpscaleProvider):
             ocr_provider=os.environ.get("YOMIFIN_UPSCALE_OCR_PROVIDER", "").strip(),
             ocr_language=(os.environ.get("YOMIFIN_UPSCALE_OCR_LANGUAGE", "").strip() or "ja"),
             ocr_timeout=_env_float("YOMIFIN_UPSCALE_OCR_TIMEOUT_SECONDS", 300.0),
+            strength=_env_float("YOMIFIN_UPSCALE_TEXT_STRENGTH", 0.7),
             allow_download=self._allow_download,
         )
 

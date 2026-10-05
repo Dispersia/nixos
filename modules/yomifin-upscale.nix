@@ -201,6 +201,16 @@ in
       '';
     };
 
+    textStrength = mkOption {
+      type = types.float;
+      default = 0.7;
+      description = ''
+        How strongly the text model's output replaces the native lettering
+        (0..1). Lower values keep more of the original stroke gaps and stop
+        dense kanji turning into blobs; 1.0 uses the model output verbatim.
+      '';
+    };
+
     ocrTokenFile = mkOption {
       type = types.nullOr types.str;
       default = null;
@@ -248,6 +258,7 @@ in
           YOMIFIN_UPSCALE_TEXT_RESTORE = if cfg.textRestore then "1" else "0";
           YOMIFIN_UPSCALE_OCR_URL = cfg.ocrUrl;
           YOMIFIN_UPSCALE_OCR_LANGUAGE = cfg.ocrLanguage;
+          YOMIFIN_UPSCALE_TEXT_STRENGTH = toString cfg.textStrength;
           PATH = lib.makeBinPath [
             pkgs.uv
             pkgs.python3
