@@ -51,7 +51,7 @@
 
   users.users.${username} = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ];
+    extraGroups = [ "wheel" "media" ];
     shell = pkgs.nushell;
 
     openssh.authorizedKeys.keys = [
