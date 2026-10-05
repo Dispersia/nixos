@@ -20,7 +20,7 @@ from .base import (
 )
 from .locking import EngineLockMixin
 from .paddle_result import coerce_confidence
-from .sentences import assign_sentences
+from .sentences import assign_sentences, assign_sentences_from_blocks
 
 DEFAULT_MODEL = "yomitoku"
 
@@ -94,7 +94,9 @@ class YomiTokuProvider(EngineLockMixin, OcrProvider):
                 if region is not None:
                     regions.append(region)
 
-            assign_sentences(regions, language)
+            blocks = list(_iter_blocks(results, ocr_results))
+            if not assign_sentences_from_blocks(regions, blocks):
+                assign_sentences(regions, language)
 
             return OcrResult(
                 provider=self.name,
@@ -130,6 +132,25 @@ def _iter_words(results: Any, ocr_results: Any) -> Iterator[tuple[Any, Any]]:
 
         if get_attr(container, "contents", "content", "text", "rec_text") is not None:
             yield container, get_attr(container, "direction")
+
+
+def _iter_blocks(results: Any, ocr_results: Any) -> Iterator[tuple[list[list[float]], str]]:
+    """Yield (polygon, contents) for each paragraph/block the engine detected.
+
+    A paragraph is one bubble/block, so its contents is the full sentence.
+    """
+    for container in _containers(results) + _containers(ocr_results):
+        paragraphs = get_attr(container, "paragraphs")
+        if not paragraphs:
+            continue
+        for paragraph in paragraphs:
+            points = coerce_points(get_attr(paragraph, "box", "points", "polygon"))
+            text = get_attr(paragraph, "contents", "content", "text")
+            if len(points) < 3 or text is None:
+                continue
+            cleaned = str(text).strip()
+            if cleaned:
+                yield points, cleaned
 
 
 def _containers(value: Any) -> list[Any]:

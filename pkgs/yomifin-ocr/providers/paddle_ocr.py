@@ -16,9 +16,9 @@ from .base import (
     package_version,
 )
 from .line_merge import merge_line_regions
-from .sentences import assign_sentences
 from .locking import EngineLockMixin
 from .paddle_result import coerce_confidence, parse_paddle_result, run_engine
+from .sentences import assign_sentences
 
 _PADDLE_LANGUAGES: dict[str, str] = {
     "ja": "japan",
