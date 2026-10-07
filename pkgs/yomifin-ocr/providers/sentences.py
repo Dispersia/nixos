@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import statistics
+
 from .base import HORIZONTAL, VERTICAL, OcrRegion, bounding_box
 
 _CJK_PREFIXES = ("ja", "zh", "ko")
@@ -112,8 +114,13 @@ def _overlaps(a: _Box, b: _Box, vertical: bool) -> bool:
 
 
 def _unit_size(items: list[tuple[OcrRegion, _Box]], *, vertical: bool) -> float:
+    # Median size, not a low percentile: manga pages carry many narrow ruby
+    # fragments, and a low percentile shrinks the gap limit until wrapped
+    # bubble columns no longer join.
     sizes = sorted((box[2] - box[0]) if vertical else (box[3] - box[1]) for _, box in items)
-    return sizes[max(0, len(sizes) // 5)] or 1.0
+    if not sizes:
+        return 1.0
+    return statistics.median(sizes) or 1.0
 
 
 def _primary(box: _Box, vertical: bool) -> float:
