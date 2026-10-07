@@ -4,6 +4,7 @@ import asyncio
 import functools
 import hmac
 import io
+import json
 import logging
 import os
 import sys
@@ -18,7 +19,8 @@ _PACKAGE_ROOT = Path(__file__).resolve().parent.parent
 if str(_PACKAGE_ROOT) not in sys.path:
     sys.path.insert(0, str(_PACKAGE_ROOT))
 
-from providers.base import OcrResult, ProviderUnavailable
+from providers.base import UNKNOWN, OcrRegion, OcrResult, ProviderUnavailable
+from providers.constants import MAX_REGIONS_PER_PAGE
 from providers.images import MAX_IMAGE_PIXELS, configure_decompression_bomb
 from providers.registry import (
     DEFAULT_PROVIDER,
@@ -26,9 +28,14 @@ from providers.registry import (
     ProviderRegistry,
     build_registry,
 )
+from providers.sentences import assign_sentences
 
 DEFAULT_MAX_BYTES = 64 * 1024 * 1024
 DEFAULT_TIMEOUT_SECONDS = 300.0
+
+# Bump when sentence grouping changes so cached OCR can be re-grouped without
+# re-running OCR.
+SENTENCE_VERSION = 2
 
 
 def _package_version() -> str:
@@ -131,6 +138,43 @@ async def _read_body_limited(request: Request, limit: int) -> bytes:
     return b"".join(chunks)
 
 
+def _parse_group_regions(payload: dict[str, Any]) -> list[tuple[str, OcrRegion]]:
+    raw = payload.get("regions")
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        raise HTTPException(status_code=400, detail="regions must be a list.")
+
+    parsed: list[tuple[str, OcrRegion]] = []
+    for item in raw[:MAX_REGIONS_PER_PAGE]:
+        if not isinstance(item, dict):
+            continue
+        polygon: list[list[float]] = []
+        points = item.get("polygon")
+        if isinstance(points, list):
+            for point in points:
+                if isinstance(point, (list, tuple)) and len(point) >= 2:
+                    try:
+                        polygon.append([float(point[0]), float(point[1])])
+                    except (TypeError, ValueError):
+                        continue
+        language = item.get("language")
+        if not isinstance(language, str):
+            language = None
+        parsed.append(
+            (
+                str(item.get("id") or ""),
+                OcrRegion(
+                    polygon=polygon,
+                    text=str(item.get("text") or ""),
+                    direction=str(item.get("direction") or UNKNOWN),
+                    language=language,
+                ),
+            )
+        )
+    return parsed
+
+
 def _read_image_dimensions(body: bytes) -> tuple[int, int]:
     if not body:
         raise HTTPException(
@@ -190,6 +234,7 @@ def _serialize(
         "provider_version": result.provider_version,
         "model_version": result.model_version,
         "language": result.language or "auto",
+        "sentence_version": SENTENCE_VERSION,
         "width": int(width),
         "height": int(height),
         "regions": regions,
@@ -238,7 +283,8 @@ async def root() -> dict[str, Any]:
     return {
         "name": "yomifin-ocr",
         "version": APP_VERSION,
-        "endpoints": ["/ocr", "/health", "/providers"],
+        "sentence_version": SENTENCE_VERSION,
+        "endpoints": ["/ocr", "/group", "/health", "/providers"],
     }
 
 
@@ -302,3 +348,37 @@ async def ocr(request: Request) -> JSONResponse:
         )
 
     return JSONResponse(_serialize(result, fallback_width, fallback_height))
+
+
+@app.post("/group")
+async def group(request: Request) -> JSONResponse:
+    _check_auth(request)
+
+    body = await _read_body_limited(request, _max_bytes())
+    try:
+        payload = json.loads(body.decode("utf-8")) if body else {}
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise HTTPException(status_code=400, detail="Request body must be JSON.") from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Request body must be a JSON object.")
+
+    language = str(payload.get("language") or "auto").strip() or "auto"
+    parsed = _parse_group_regions(payload)
+    assign_sentences([region for _, region in parsed], language)
+
+    return JSONResponse(
+        {
+            "sentence_version": SENTENCE_VERSION,
+            "language": language,
+            "regions": [
+                {
+                    "id": region_id,
+                    "sentence": region.sentence
+                    if region.sentence is not None
+                    else (region.text or ""),
+                    "sentence_offset": int(region.sentence_offset or 0),
+                }
+                for region_id, region in parsed
+            ],
+        }
+    )
