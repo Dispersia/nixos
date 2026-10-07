@@ -207,6 +207,12 @@ in
     enable = true;
     address = "100.84.150.49";
 
+    # Browser-trusted HTTPS name for Jellyfin, with a Tailscale (Let's Encrypt)
+    # certificate fetched and renewed by Caddy. Use this on devices that can't
+    # install the internal Caddy CA (e.g. Android/Brave), so the YomiFin reader
+    # can be installed as a PWA: https://home-server.tail7c1ddb.ts.net/
+    tailscaleHost = "home-server.tail7c1ddb.ts.net";
+
     # Resolve *.home.arpa to the LAN address so on-LAN clients connect
     # directly instead of through Tailscale (a relayed/DERP path makes Jellyfin
     # page downloads crawl). Off-LAN clients reach the same address through the

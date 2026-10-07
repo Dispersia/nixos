@@ -21,6 +21,19 @@ let
   scheme = if cfg.https then "https" else "http";
   tlsConfig = optionalString cfg.https "tls internal";
 
+  # Optional browser-trusted name served with a Tailscale (Let's Encrypt)
+  # certificate. Caddy recognizes *.ts.net hosts and fetches/renews the cert
+  # from the local tailscaled daemon (see services.tailscale.permitCertUid),
+  # so clients trust it without installing the internal CA.
+  hasTailscale = cfg.tailscaleHost != null;
+  tailscaleSite = optionalString hasTailscale ''
+    # Browser-trusted name with a Tailscale-issued certificate.
+    https://${cfg.tailscaleHost} {
+      bind ${cfg.listenAddress}
+      reverse_proxy 127.0.0.1:${toString cfg.routes.${cfg.tailscaleRoute}.port}
+    }
+  '';
+
   landing = pkgs.writeTextDir "index.html" ''
     <!doctype html>
     <html lang="en">
@@ -135,14 +148,46 @@ in
       '';
       description = "Services to expose as <name>.<domain>.";
     };
+
+    tailscaleHost = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      example = "home-server.tail1234.ts.net";
+      description = ''
+        Optional Tailscale MagicDNS name to serve with a public (Let's Encrypt)
+        certificate. Caddy fetches that certificate from the local tailscaled
+        daemon and renews it automatically, so clients trust the name without
+        installing the internal CA. The route named by `tailscaleRoute` is
+        reverse-proxied at the root of this name. HTTPS certificates must be
+        enabled for the tailnet in the Tailscale admin console.
+      '';
+    };
+
+    tailscaleRoute = mkOption {
+      type = types.str;
+      default = "jellyfin";
+      description = ''
+        Route from `routes` served at the root of `tailscaleHost`. Jellyfin
+        needs to be at the root of a host, so this cannot be a path prefix.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = !hasTailscale || builtins.hasAttr cfg.tailscaleRoute cfg.routes;
+        message = "services.tailnetGateway.tailscaleRoute '${cfg.tailscaleRoute}' is not defined in services.tailnetGateway.routes.";
+      }
+    ];
+
     services.caddy = {
       enable = true;
       httpPort = cfg.httpPort;
       extraConfig = ''
         ${concatStringsSep "\n" (mapAttrsToList siteBlock cfg.routes)}
+
+        ${tailscaleSite}
 
         ${scheme}://${cfg.domain}, ${scheme}://home.${cfg.domain} {
           bind ${cfg.listenAddress}
@@ -164,6 +209,10 @@ in
       wants = [ "tailscaled.service" ];
       after = [ "tailscaled.service" ];
     };
+
+    # Let the caddy user fetch TLS certificates from the local tailscaled
+    # daemon for the *.ts.net host above.
+    services.tailscale.permitCertUid = mkIf hasTailscale "caddy";
 
     services.dnsmasq = {
       enable = true;
