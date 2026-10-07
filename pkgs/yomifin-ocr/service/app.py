@@ -35,7 +35,7 @@ DEFAULT_TIMEOUT_SECONDS = 300.0
 
 # Bump when sentence grouping changes so cached OCR can be re-grouped without
 # re-running OCR.
-SENTENCE_VERSION = 2
+SENTENCE_VERSION = 3
 
 
 def _package_version() -> str:

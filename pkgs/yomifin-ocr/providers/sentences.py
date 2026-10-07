@@ -14,6 +14,11 @@ _Box = tuple[float, float, float, float]
 _MAX_GAP = 0.6
 _MIN_OVERLAP = 0.7
 
+# A column thinner than this fraction of the median column is a ruby/furigana
+# fragment annotating the text beside it. It must not be merged into that text:
+# the reading is not part of the word and pollutes dictionary lookups.
+_RUBY_MAX_THICKNESS_RATIO = 0.6
+
 
 def assign_sentences(regions: list[OcrRegion], language: str | None = None) -> list[OcrRegion]:
     """Annotate each region with its full sentence and offset within it.
@@ -25,7 +30,8 @@ def assign_sentences(regions: list[OcrRegion], language: str | None = None) -> l
     if not regions:
         return regions
 
-    separator = "" if _is_cjk(language) else " "
+    cjk = _is_cjk(language)
+    separator = "" if cjk else " "
     vertical: list[tuple[OcrRegion, _Box]] = []
     horizontal: list[tuple[OcrRegion, _Box]] = []
     passthrough: list[OcrRegion] = []
@@ -41,20 +47,38 @@ def assign_sentences(regions: list[OcrRegion], language: str | None = None) -> l
         else:
             passthrough.append(region)
 
-    _assign_axis(vertical, vertical=True, separator=separator)
-    _assign_axis(horizontal, vertical=False, separator=separator)
+    _assign_axis(
+        vertical, vertical=True, separator=separator, strip_fragments=cjk
+    )
+    _assign_axis(
+        horizontal, vertical=False, separator=separator, strip_fragments=cjk
+    )
     for region in passthrough:
         region.sentence = region.text
         region.sentence_offset = 0
     return regions
 
 
-def _assign_axis(items: list[tuple[OcrRegion, _Box]], *, vertical: bool, separator: str) -> None:
+def _assign_axis(
+    items: list[tuple[OcrRegion, _Box]],
+    *,
+    vertical: bool,
+    separator: str,
+    strip_fragments: bool,
+) -> None:
     if not items:
         return
 
     unit = _unit_size(items, vertical=vertical)
-    for bubble in _group_bubbles(items, vertical=vertical, unit=unit):
+    columns: list[tuple[OcrRegion, _Box]] = []
+    fragments: list[tuple[OcrRegion, _Box]] = []
+    for region, box in items:
+        if strip_fragments and _thickness(box, vertical) < _RUBY_MAX_THICKNESS_RATIO * unit:
+            fragments.append((region, box))
+        else:
+            columns.append((region, box))
+
+    for bubble in _group_bubbles(columns, vertical=vertical, unit=unit):
         ordered = sorted(bubble["items"], key=lambda item: _reading_key(item[1], vertical))
         texts = [region.text or "" for region, _ in ordered]
         full = separator.join(texts)
@@ -63,6 +87,12 @@ def _assign_axis(items: list[tuple[OcrRegion, _Box]], *, vertical: bool, separat
             region.sentence = full
             region.sentence_offset = offset
             offset += len(text) + len(separator)
+
+    # Ruby/furigana annotates the base column beside it; keep it as its own
+    # sentence so the base word's sentence stays just the word.
+    for region, _ in fragments:
+        region.sentence = region.text or ""
+        region.sentence_offset = 0
 
 
 def _group_bubbles(
@@ -121,6 +151,12 @@ def _unit_size(items: list[tuple[OcrRegion, _Box]], *, vertical: bool) -> float:
     if not sizes:
         return 1.0
     return statistics.median(sizes) or 1.0
+
+
+def _thickness(box: _Box, vertical: bool) -> float:
+    # Extent across the reading direction: column width for vertical text, row
+    # height for horizontal text. Ruby fragments are thinner than the base text.
+    return (box[2] - box[0]) if vertical else (box[3] - box[1])
 
 
 def _primary(box: _Box, vertical: bool) -> float:
