@@ -64,7 +64,7 @@ let
 in
 {
   options.services.tailnetGateway = {
-    enable = mkEnableOption "Tailscale-only reverse proxy and wildcard DNS gateway";
+    enable = mkEnableOption "reverse proxy and wildcard DNS gateway for the tailnet and LAN";
 
     domain = mkOption {
       type = types.str;
@@ -75,7 +75,20 @@ in
     address = mkOption {
       type = types.str;
       example = "100.84.150.49";
-      description = "Tailscale IPv4 address of this host that DNS records point at.";
+      description = "Tailscale IPv4 address of this host.";
+    };
+
+    dnsAddress = mkOption {
+      type = types.str;
+      default = cfg.address;
+      defaultText = lib.literalExpression "config.services.tailnetGateway.address";
+      example = "192.168.4.50";
+      description = ''
+        Address returned for <name>.<domain> and <domain>. Set this to the
+        host's LAN address so clients on the same network connect directly
+        instead of through Tailscale; advertise that address as a subnet route
+        so off-LAN clients still reach it over the tailnet.
+      '';
     };
 
     listenAddress = mkOption {
@@ -156,7 +169,7 @@ in
       enable = true;
       resolveLocalQueries = false;
       settings = {
-        address = [ "/${cfg.domain}/${cfg.address}" ];
+        address = [ "/${cfg.domain}/${cfg.dnsAddress}" ];
         "local-ttl" = 300;
         domain-needed = true;
         bogus-priv = true;

@@ -76,7 +76,12 @@
 
   services.tailscale = {
     useRoutingFeatures = "server";
-    extraSetFlags = [ "--advertise-routes=10.50.0.0/24" ];
+
+    # 10.50.0.0/24 is the cluster network; 192.168.4.50/32 is the LAN address
+    # that *.home.arpa now resolves to, so off-LAN clients still reach the
+    # gateway over the tailnet. Approve the new route in the Tailscale admin
+    # console (Machines -> home-server -> Edit route settings) after deploy.
+    extraSetFlags = [ "--advertise-routes=10.50.0.0/24,192.168.4.50/32" ];
   };
 
   environment.systemPackages = with pkgs; [

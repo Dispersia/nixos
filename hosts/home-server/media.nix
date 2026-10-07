@@ -206,6 +206,17 @@ in
   services.tailnetGateway = {
     enable = true;
     address = "100.84.150.49";
+
+    # Resolve *.home.arpa to the LAN address so on-LAN clients connect
+    # directly instead of through Tailscale (a relayed/DERP path makes Jellyfin
+    # page downloads crawl). Off-LAN clients reach the same address through the
+    # 192.168.4.50/32 subnet route advertised in default.nix.
+    dnsAddress = "192.168.4.50";
+
+    # Caddy also serves the LAN interface; binding all interfaces keeps the
+    # tailnet address working for clients that cached the old DNS answer.
+    listenAddress = "0.0.0.0";
+
     routes = {
       prowlarr = {
         port = 9696;
@@ -236,6 +247,10 @@ in
       };
     };
   };
+
+  # The tailnet gateway is now reachable from the LAN as well, not just the
+  # tailscale0 interface (which is already trusted).
+  services.caddy.openFirewall = true;
 
   services.nordvpnNetns = {
     enable = true;
