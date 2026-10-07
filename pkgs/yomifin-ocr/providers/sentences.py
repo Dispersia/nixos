@@ -25,7 +25,9 @@ def assign_sentences(regions: list[OcrRegion], language: str | None = None) -> l
 
     Regions keep their own polygon/text (so the overlay can still render and
     hit-test them individually); this only groups them into bubbles so a word
-    split across a wrapped column can be looked up in context.
+    split across a wrapped column can be looked up in context. Ruby/furigana
+    fragments are dropped: their reading is not part of the word, and leaving
+    them in makes the furigana separately selectable.
     """
     if not regions:
         return regions
@@ -47,16 +49,21 @@ def assign_sentences(regions: list[OcrRegion], language: str | None = None) -> l
         else:
             passthrough.append(region)
 
+    dropped: list[OcrRegion] = []
     _assign_axis(
-        vertical, vertical=True, separator=separator, strip_fragments=cjk
+        vertical, vertical=True, separator=separator, strip_fragments=cjk, dropped=dropped
     )
     _assign_axis(
-        horizontal, vertical=False, separator=separator, strip_fragments=cjk
+        horizontal, vertical=False, separator=separator, strip_fragments=cjk, dropped=dropped
     )
     for region in passthrough:
         region.sentence = region.text
         region.sentence_offset = 0
-    return regions
+
+    if not dropped:
+        return regions
+    dropped_ids = {id(region) for region in dropped}
+    return [region for region in regions if id(region) not in dropped_ids]
 
 
 def _assign_axis(
@@ -65,16 +72,19 @@ def _assign_axis(
     vertical: bool,
     separator: str,
     strip_fragments: bool,
+    dropped: list[OcrRegion],
 ) -> None:
     if not items:
         return
 
     unit = _unit_size(items, vertical=vertical)
     columns: list[tuple[OcrRegion, _Box]] = []
-    fragments: list[tuple[OcrRegion, _Box]] = []
     for region, box in items:
         if strip_fragments and _thickness(box, vertical) < _RUBY_MAX_THICKNESS_RATIO * unit:
-            fragments.append((region, box))
+            # Ruby/furigana annotates the base column beside it; drop it rather
+            # than merging the reading into the word or exposing it as its own
+            # selectable region.
+            dropped.append(region)
         else:
             columns.append((region, box))
 
@@ -87,12 +97,6 @@ def _assign_axis(
             region.sentence = full
             region.sentence_offset = offset
             offset += len(text) + len(separator)
-
-    # Ruby/furigana annotates the base column beside it; keep it as its own
-    # sentence so the base word's sentence stays just the word.
-    for region, _ in fragments:
-        region.sentence = region.text or ""
-        region.sentence_offset = 0
 
 
 def _group_bubbles(

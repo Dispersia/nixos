@@ -35,7 +35,7 @@ DEFAULT_TIMEOUT_SECONDS = 300.0
 
 # Bump when sentence grouping changes so cached OCR can be re-grouped without
 # re-running OCR.
-SENTENCE_VERSION = 3
+SENTENCE_VERSION = 4
 
 
 def _package_version() -> str:
@@ -364,21 +364,25 @@ async def group(request: Request) -> JSONResponse:
 
     language = str(payload.get("language") or "auto").strip() or "auto"
     parsed = _parse_group_regions(payload)
-    assign_sentences([region for _, region in parsed], language)
+    kept = assign_sentences([region for _, region in parsed], language)
+    kept_ids = {id(region) for region in kept}
+
+    regions = [
+        {
+            "id": region_id,
+            "sentence": region.sentence if region.sentence is not None else (region.text or ""),
+            "sentence_offset": int(region.sentence_offset or 0),
+        }
+        for region_id, region in parsed
+        if id(region) in kept_ids
+    ]
+    dropped = [region_id for region_id, region in parsed if id(region) not in kept_ids]
 
     return JSONResponse(
         {
             "sentence_version": SENTENCE_VERSION,
             "language": language,
-            "regions": [
-                {
-                    "id": region_id,
-                    "sentence": region.sentence
-                    if region.sentence is not None
-                    else (region.text or ""),
-                    "sentence_offset": int(region.sentence_offset or 0),
-                }
-                for region_id, region in parsed
-            ],
+            "regions": regions,
+            "dropped": dropped,
         }
     )

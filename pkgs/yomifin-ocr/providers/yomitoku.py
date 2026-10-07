@@ -94,7 +94,7 @@ class YomiTokuProvider(EngineLockMixin, OcrProvider):
                 if region is not None:
                     regions.append(region)
 
-            assign_sentences(regions, language)
+            regions = assign_sentences(regions, language)
 
             return OcrResult(
                 provider=self.name,
