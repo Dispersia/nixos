@@ -25,11 +25,16 @@ let
   # certificate. Caddy recognizes *.ts.net hosts and fetches/renews the cert
   # from the local tailscaled daemon (see services.tailscale.permitCertUid),
   # so clients trust it without installing the internal CA.
+  #
+  # This site must bind the Tailscale address rather than 0.0.0.0: when it
+  # shares a wildcard listener with the `tls internal` sites, the Caddyfile
+  # adapter emits an explicit (public) automation policy for it, which disables
+  # Caddy's built-in Tailscale handling and makes it try public ACME instead.
   hasTailscale = cfg.tailscaleHost != null;
   tailscaleSite = optionalString hasTailscale ''
     # Browser-trusted name with a Tailscale-issued certificate.
     https://${cfg.tailscaleHost} {
-      bind ${cfg.listenAddress}
+      bind ${cfg.address}
       reverse_proxy 127.0.0.1:${toString cfg.routes.${cfg.tailscaleRoute}.port}
     }
   '';
