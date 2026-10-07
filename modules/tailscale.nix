@@ -17,6 +17,11 @@
     ];
   };
 
+  # extraSetFlags are applied by the `tailscaled-set` oneshot, which only runs
+  # when tailscaled starts. Restart tailscaled when the flags change so a
+  # deploy actually applies them.
+  systemd.services.tailscaled.restartTriggers = [ config.services.tailscale.extraSetFlags ];
+
   networking.nftables.enable = true;
   networking.firewall = {
     enable = true;
