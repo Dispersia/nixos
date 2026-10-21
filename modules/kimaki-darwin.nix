@@ -92,24 +92,13 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = [ kimaki ];
 
-    launchd.user.agents.kimaki = {
-      command = "${kimaki}/bin/kimaki ${lib.escapeShellArgs args}";
-
-      # Kimaki looks for the OpenCode binary on PATH (and at OPENCODE_PATH);
-      # the opencode2 package's binary is namespaced to opencode2.
-      path = [
-        cfg.opencodePackage
-        pkgs.nodejs
-        pkgs.git
-      ];
-
-      environment = {
-        HOME = home;
-        OPENCODE_PATH = "${cfg.opencodePackage}/bin/opencode2";
-      };
-
+    # A system daemon (not a per-user agent) so it starts at boot without a
+    # logged-in GUI session, like the yomifin sidecars on this host.
+    launchd.daemons.kimaki = {
       serviceConfig = {
         Label = "dev.kimaki.bot";
+        ProgramArguments = [ "${kimaki}/bin/kimaki" ] ++ args;
+        UserName = cfg.user;
         RunAtLoad = true;
         KeepAlive = true;
         WorkingDirectory = home;
@@ -117,6 +106,17 @@ in
         # npx/onboarding output (including the one-time install URL).
         StandardOutPath = "${home}/Library/Logs/kimaki.log";
         StandardErrorPath = "${home}/Library/Logs/kimaki.err.log";
+        EnvironmentVariables = {
+          HOME = home;
+          PATH = "${
+            lib.makeBinPath [
+              cfg.opencodePackage
+              pkgs.nodejs
+              pkgs.git
+            ]
+          }:/usr/bin:/bin:/usr/sbin:/sbin";
+          OPENCODE_PATH = "${cfg.opencodePackage}/bin/opencode2";
+        };
       };
     };
   };
