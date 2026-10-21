@@ -15,7 +15,6 @@
     ../development/claude
     ../development/git
     ../development/kicad
-    ../development/kotlin-lsp
     ../development/kubectl
     ../development/lmms
     ../development/neovim
