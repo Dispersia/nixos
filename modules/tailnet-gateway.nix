@@ -26,15 +26,22 @@ let
   # from the local tailscaled daemon (see services.tailscale.permitCertUid),
   # so clients trust it without installing the internal CA.
   #
-  # This site must bind the Tailscale address rather than 0.0.0.0: when it
-  # shares a wildcard listener with the `tls internal` sites, the Caddyfile
-  # adapter emits an explicit (public) automation policy for it, which disables
-  # Caddy's built-in Tailscale handling and makes it try public ACME instead.
+  # `get_certificate tailscale` is spelled out even though the name alone would
+  # usually be enough. Sharing a listener with the `tls internal` sites makes the
+  # Caddyfile adapter emit an automation policy for this site, and without the
+  # explicit get_certificate that policy has neither issuers nor a certificate
+  # source, so the certificate is never obtained. Binding this site to its own
+  # address instead avoids that, but then the tailnet address only serves this
+  # one name: every <name>.<domain> site answers with an empty 200 there, which
+  # breaks clients that still resolve the internal names to the tailnet address.
   hasTailscale = cfg.tailscaleHost != null;
   tailscaleSite = optionalString hasTailscale ''
     # Browser-trusted name with a Tailscale-issued certificate.
     https://${cfg.tailscaleHost} {
-      bind ${cfg.address}
+      bind ${cfg.listenAddress}
+      tls {
+        get_certificate tailscale
+      }
       reverse_proxy 127.0.0.1:${toString cfg.routes.${cfg.tailscaleRoute}.port}
     }
   '';
