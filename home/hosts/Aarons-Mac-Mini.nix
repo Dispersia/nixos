@@ -10,6 +10,7 @@
 
     ../environment/alacritty
     ../environment/brave
+    ../environment/discord
     ../environment/gpg
     ../environment/yazi
     ../environment/zellij
