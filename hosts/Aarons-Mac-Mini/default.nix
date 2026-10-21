@@ -9,6 +9,8 @@
   imports = [
     ../../modules/darwin-system.nix
     ../../modules/comin-darwin.nix
+    ../../modules/kimaki-darwin.nix
+    ../../modules/tailnet-gateway-darwin.nix
     ../../modules/yomifin-ocr.nix
     ../../modules/yomifin-upscale.nix
   ];
@@ -47,6 +49,28 @@
   };
 
   services.tailscale.enable = true;
+
+  # Kimaki (the Discord bot for OpenCode 2) in gateway mode. It starts at
+  # login and keeps running; the first start prints a one-time install URL in
+  # ~/Library/Logs/kimaki.log that has to be authorized once in Discord.
+  services.kimaki = {
+    enable = true;
+    user = username;
+    machineName = hostName;
+  };
+
+  # Browser-trusted HTTPS gateway over the tailnet, the macOS equivalent of the
+  # home-server's tailnetGateway: https://<hostname>/ lists the routes below.
+  # Add a service with `routes.<name>.port` once it listens on loopback.
+  services.tailnetGateway = {
+    enable = true;
+    hostname = "aarons-mac-mini.tail7c1ddb.ts.net";
+    routes = { };
+  };
+
+  # Reach the Mac itself over the tailnet (also serves as the SSH host for the
+  # comin deploy, and for remote diagnostics).
+  services.openssh.enable = true;
 
   users.knownUsers = [ "${username}" ];
   users.users.${username} = {
