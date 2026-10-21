@@ -1,11 +1,27 @@
 { config, pkgs, ... }:
+let
+  # Qt 6.12's uic rejects custom widget class names prefixed with "::", which
+  # breaks dictionary_tool.ui in mozc <= 2.30 (NixOS/nixpkgs#576522). Fixed
+  # upstream in google/mozc@29c082a; drop this override once nixpkgs ships
+  # mozc >= 3.35.
+  fcitx5-mozc-patched = pkgs.fcitx5-mozc.override {
+    mozc = pkgs.mozc.overrideAttrs (old: {
+      postPatch = (old.postPatch or "") + ''
+        if [ -e src/gui/dictionary_tool/dictionary_tool.ui ]; then
+          substituteInPlace src/gui/dictionary_tool/dictionary_tool.ui \
+            --replace-quiet "::mozc::gui::DictionaryContentTableWidget" "mozc::gui::DictionaryContentTableWidget"
+        fi
+      '';
+    });
+  };
+in
 {
   i18n.inputMethod = {
     enable = true;
     type = "fcitx5";
     fcitx5 = {
       addons = with pkgs; [
-        fcitx5-mozc
+        fcitx5-mozc-patched
         fcitx5-rime
 
         fcitx5-gtk
