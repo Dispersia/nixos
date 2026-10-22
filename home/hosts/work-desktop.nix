@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 {
   imports = [
     ../cli
@@ -37,5 +37,10 @@
     ../gaming
   ];
 
-  home.packages = [ pkgs.azure-cli ];
+  # azure-cli from unstable currently pulls in python3.14-fabric, which nixpkgs
+  # marks broken because fabric 3.2.3 is incompatible with invoke 3. Use the
+  # stable input (invoke 2.x) until fabric is fixed upstream.
+  home.packages = [
+    inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.azure-cli
+  ];
 }
