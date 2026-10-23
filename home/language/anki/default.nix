@@ -88,7 +88,11 @@ in
     enable = true;
     package = if pkgs.stdenv.hostPlatform.isDarwin then pkgs.anki-bin else pkgs.anki;
     addons = [
-      pkgs.ankiAddons.anki-connect
+      (pkgs.ankiAddons.anki-connect.withConfig {
+        config = {
+          webCorsOriginList = [ "*" ];
+        };
+      })
       pkgs.ankiAddons.passfail2
 
       (onigiri.withConfig {
