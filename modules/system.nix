@@ -179,6 +179,18 @@ in
     };
   };
 
+  # Keep the running PipeWire session alive across `nixos-rebuild switch`
+  # activations. Restarting the audio server kills every application's
+  # audio connection, and most apps (Discord, Electron, browsers, ...) do
+  # not reconnect on their own, so the microphone disappears until they
+  # are restarted. With restartIfChanged = false, new versions only take
+  # effect at the next login/reboot.
+  systemd.user.services = {
+    pipewire.restartIfChanged = false;
+    pipewire-pulse.restartIfChanged = false;
+    wireplumber.restartIfChanged = false;
+  };
+
   time.timeZone = "America/Phoenix";
 
   programs.steam = {
