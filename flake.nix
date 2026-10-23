@@ -41,6 +41,15 @@
       url = "github:karaolidis/nix-obsidian-extensions";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    globalprotect-openconnect = {
+      url = "github:yuezk/GlobalProtect-openconnect";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        naersk.inputs.nixpkgs.follows = "nixpkgs";
+        rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
+      };
+    };
   };
 
   outputs =

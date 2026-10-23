@@ -3,6 +3,7 @@
   pkgs,
   lib,
   hostName,
+  inputs,
   ...
 }:
 {
@@ -14,8 +15,12 @@
     ../../modules/printing.nix
     ../../modules/diagnostics.nix
 
+    inputs.globalprotect-openconnect.nixosModules.default
+
     ./hardware-configuration.nix
   ];
+
+  programs.globalprotect-openconnect.enable = true;
 
   boot.loader = {
     systemd-boot.enable = true;
