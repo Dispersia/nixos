@@ -1,5 +1,13 @@
 { pkgs, config, ... }:
 let
+  # Anki's prefs21.db is generated in the read-only Nix store, so the AnkiWeb
+  # login can never be persisted by Anki itself. Instead, these files hold the
+  # sync credentials and are applied on every profile open via
+  # `programs.anki.profiles.<name>.sync`.
+  secretsDir = "${config.home.homeDirectory}/.secrets";
+  ankiSyncKeyFile = "${secretsDir}/anki-sync-key";
+  ankiSyncUserFile = "${secretsDir}/anki-sync-username";
+
   onigiriSettings = userName: ''
     {
       "userName": "${userName}",
@@ -51,9 +59,6 @@ let
     cat > "$out/settings_User 1.json" << 'EOF'
     ${onigiriSettings "Dispersia"}
     EOF
-    cat > "$out/settings_dispe.json" << 'EOF'
-    ${onigiriSettings "dispe"}
-    EOF
   '';
 
   onigiri = pkgs.anki-utils.buildAnkiAddon (finalAttrs: {
@@ -89,6 +94,65 @@ let
       PATCH
     '';
   });
+
+  # Whenever you log in to AnkiWeb interactively, write the credentials to the
+  # files referenced by `profiles."User 1".sync`, so that from then on every
+  # profile open (which reads those files) restores the login. Anki itself
+  # can't persist this: the module keeps prefs21.db read-only in the store and
+  # disables its settings saving.
+  syncKeyCapture = pkgs.anki-utils.buildAnkiAddon {
+    pname = "anki-sync-key-capture";
+    version = "1.0";
+    src = pkgs.writeTextDir "__init__.py" ''
+      import os
+      from pathlib import Path
+
+      from aqt.profiles import ProfileManager
+
+      PROFILE = "User 1"
+      USER_FILE = Path("${ankiSyncUserFile}")
+      KEY_FILE = Path("${ankiSyncKeyFile}")
+
+      def _write(path, value):
+          try:
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_text(value.strip() + "\n")
+              os.chmod(path, 0o600)
+          except OSError:
+              pass
+
+      def _capture(pm):
+          if pm.name != PROFILE:
+              return
+          key = pm.profile.get("syncKey")
+          if not key:
+              return
+          user = pm.profile.get("syncUser") or pm.meta.get("syncUser")
+          _write(KEY_FILE, key)
+          if user:
+              _write(USER_FILE, str(user))
+
+      _original_set_sync_key = ProfileManager.set_sync_key
+      _original_set_sync_username = ProfileManager.set_sync_username
+
+      def set_sync_key(self, val):
+          _original_set_sync_key(self, val)
+          try:
+              _capture(self)
+          except Exception:
+              pass
+
+      def set_sync_username(self, val):
+          _original_set_sync_username(self, val)
+          try:
+              _capture(self)
+          except Exception:
+              pass
+
+      ProfileManager.set_sync_key = set_sync_key
+      ProfileManager.set_sync_username = set_sync_username
+    '';
+  };
 in
 {
   programs.anki = {
@@ -105,11 +169,18 @@ in
       (onigiri.withConfig {
         userFiles = onigiriUserFiles;
       })
+
+      syncKeyCapture
     ];
 
     profiles = {
-      "User 1".default = true;
-      dispe = { };
+      "User 1" = {
+        default = true;
+        sync = {
+          usernameFile = ankiSyncUserFile;
+          keyFile = ankiSyncKeyFile;
+        };
+      };
     };
   };
 }
