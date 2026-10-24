@@ -1,10 +1,8 @@
 { pkgs, config, ... }:
 let
-  onigiriUserFiles = pkgs.runCommand "onigiri-user-files" { } ''
-    mkdir -p $out/{custom_deck_icons,fonts,icons,images,main_bg,profile,profile_bg,reviewer_bg,reviewer_bar_bg,sidebar_bg,toolbar_bg,user_themes}
-    cat > "$out/settings_User 1.json" << 'EOF'
+  onigiriSettings = userName: ''
     {
-      "userName": "Dispersia",
+      "userName": "${userName}",
       "showWelcomePopup": false,
       "lastSeenWelcomeVersion": "1.0.9.1-beta",
       "onigiri_reviewer_bg_light_color": "#f5ede5",
@@ -46,6 +44,15 @@ let
         }
       }
     }
+  '';
+
+  onigiriUserFiles = pkgs.runCommand "onigiri-user-files" { } ''
+    mkdir -p $out/{custom_deck_icons,fonts,icons,images,main_bg,profile,profile_bg,reviewer_bg,reviewer_bar_bg,sidebar_bg,toolbar_bg,user_themes}
+    cat > "$out/settings_User 1.json" << 'EOF'
+    ${onigiriSettings "Dispersia"}
+    EOF
+    cat > "$out/settings_dispe.json" << 'EOF'
+    ${onigiriSettings "dispe"}
     EOF
   '';
 
@@ -99,5 +106,10 @@ in
         userFiles = onigiriUserFiles;
       })
     ];
+
+    profiles = {
+      "User 1".default = true;
+      dispe = { };
+    };
   };
 }
