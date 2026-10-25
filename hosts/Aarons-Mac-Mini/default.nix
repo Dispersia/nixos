@@ -9,11 +9,20 @@
   imports = [
     ../../modules/darwin-system.nix
     ../../modules/comin-darwin.nix
+    ../../modules/forge-neo-darwin.nix
     ../../modules/kimaki-darwin.nix
     ../../modules/tailnet-gateway-darwin.nix
     ../../modules/yomifin-ocr.nix
     ../../modules/yomifin-upscale.nix
   ];
+
+  # Image generation WebUI. The first start installs torch and friends into
+  # ~/ForgeNeo/venv (a few GB, takes a few minutes); after that, models go in
+  # ~/ForgeNeo/models/<type>/ and extensions in ~/ForgeNeo/extensions/.
+  services.forge-neo = {
+    enable = true;
+    user = username;
+  };
 
   services.yomifin.ocr = {
     enable = true;
@@ -65,7 +74,7 @@
   services.tailnetGateway = {
     enable = true;
     hostname = "aarons-mac-mini.tail7c1ddb.ts.net";
-    routes = { };
+    routes.forge.port = config.services.forge-neo.port;
   };
 
   # Reach the Mac itself over the tailnet (also serves as the SSH host for the

@@ -22,6 +22,15 @@
 
   programs.globalprotect-openconnect.enable = true;
 
+  # Override the module's default package: the upstream flake's package set
+  # evaluates deprecated `stdenv.isLinux`/`stdenv.isDarwin` attributes and
+  # spams evaluation warnings. This local copy uses `stdenv.hostPlatform.*`.
+  programs.globalprotect-openconnect.package =
+    pkgs.callPackage ../../pkgs/globalprotect-openconnect.nix
+      {
+        relocateScript = "${inputs.globalprotect-openconnect}/scripts/relocate-install-paths.sh";
+      };
+
   boot.loader = {
     systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
