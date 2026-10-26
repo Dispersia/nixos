@@ -1,0 +1,107 @@
+diff --git a/backend/attention.py b/backend/attention.py
+index a8d54c0..8365e6a 100644
+--- a/backend/attention.py
++++ b/backend/attention.py
+@@ -271,6 +271,37 @@ def attention_xformers(q, k, v, heads, mask=None, attn_precision=None, skip_resh
+     return out
+ 
+ 
++# The MPS backend has no fused scaled_dot_product_attention: every call falls back
++# to the math implementation, which materialises the whole (b * heads, q_seq, kv_seq)
++# logits tensor at once. At 1024x1024 that is 8 GiB for a single SD1.5 self-attention
++# layer. Walking the query axis in blocks is mathematically identical but only ever
++# needs one block at a time.
++ATTENTION_WORKSPACE_BYTES = 1536 * 1024 * 1024
++MPS_MAX_ALLOCATION_ELEMENTS = 2**31 - 1
++
++
++def attention_query_chunk_count(b, heads, q_seq, kv_seq, element_size, mask):
++    """How many query blocks are needed to keep one attention matrix within budget."""
++    if mask is not None:
++        return 1  # a mask would have to be sliced along with the query; leave those alone
++
++    elems_per_query = b * heads * kv_seq
++    if elems_per_query <= 0:
++        return 1
++
++    # account fp32 even for fp16 inputs: the math backend upcasts internally,
++    # and count two buffers (logits plus the softmax result)
++    bytes_per_query = elems_per_query * max(element_size, 4) * 2
++    max_queries = max(1, ATTENTION_WORKSPACE_BYTES // bytes_per_query)
++    # MPS refuses a single allocation above 2**31 - 1 elements
++    max_queries = min(max_queries, max(1, MPS_MAX_ALLOCATION_ELEMENTS // elems_per_query))
++
++    if max_queries >= q_seq:
++        return 1
++
++    return math.ceil(q_seq / max_queries)
++
++
+ @wrap_attn
+ def attention_pytorch(q, k, v, heads, mask=None, attn_precision=None, skip_reshape=False, skip_output_reshape=False, **kwargs):
+     if skip_reshape:
+@@ -290,7 +321,35 @@ def attention_pytorch(q, k, v, heads, mask=None, attn_precision=None, skip_resha
+     sdpa_keys = ("scale", "enable_gqa")
+     sdpa_extra = {k: v for k, v in kwargs.items() if k in sdpa_keys}
+ 
+-    if SDP_BATCH_LIMIT >= b:
++    chunks = 1
++    if SDP_BATCH_LIMIT >= b and memory_management.mps_mode() and not sdpa_extra.get("enable_gqa", False):
++        chunks = attention_query_chunk_count(b, heads, q.shape[2], k.shape[2], q.element_size(), mask)
++
++    if chunks > 1:
++        out = torch.empty((b, heads, q.shape[2], dim_head), dtype=q.dtype, layout=q.layout, device=q.device)
++        chunk_size = math.ceil(q.shape[2] / chunks)
++        # Plain bmm rather than scaled_dot_product_attention: MPS has no fused SDPA, and
++        # its math fallback reserves a multi-gigabyte workspace per call (measured 5.8 GiB
++        # vs 2.8 GiB for bmm at the same block size, and ~3.6x slower per block).
++        q_flat = q.reshape(b * heads, q.shape[2], dim_head)
++        k_flat = k.reshape(b * heads, k.shape[2], dim_head).transpose(1, 2)
++        v_flat = v.reshape(b * heads, v.shape[2], dim_head)
++        out_flat = out.reshape(b * heads, q.shape[2], dim_head)
++        scale = sdpa_extra.get("scale") or dim_head**-0.5
++
++        for i in range(0, q.shape[2], chunk_size):
++            end = min(i + chunk_size, q.shape[2])
++            sim = torch.bmm(q_flat[:, i:end], k_flat) * scale
++            out_flat[:, i:end] = torch.bmm(torch.softmax(sim, dim=-1), v_flat)
++            del sim
++            # Keeps the temporary Metal buffers bounded: MPS retains the command buffers
++            # of in-flight work, which is what let the SDPA path accumulate across blocks
++            # until it needed the whole matrix at once.
++            torch.mps.synchronize()
++
++        if not skip_output_reshape:
++            out = out.transpose(1, 2).reshape(b, -1, heads * dim_head)
++    elif SDP_BATCH_LIMIT >= b:
+         out = operations.scaled_dot_product_attention(q, k, v, attn_mask=mask, dropout_p=0.0, is_causal=False, **sdpa_extra)
+         if not skip_output_reshape:
+             out = out.transpose(1, 2).reshape(b, -1, heads * dim_head)
+diff --git a/backend/memory_management.py b/backend/memory_management.py
+index 8a689c2..6383fdf 100644
+--- a/backend/memory_management.py
++++ b/backend/memory_management.py
+@@ -291,6 +291,11 @@ if is_nvidia() and torch_version_numeric[0] >= 2:
+     ENABLE_PYTORCH_ATTENTION = True
+ elif is_intel_xpu():
+     ENABLE_PYTORCH_ATTENTION = True
++elif cpu_state is CPUState.MPS:
++    # Apple Silicon: MPS supports scaled_dot_product_attention. Without this,
++    # attention_basic materialises the full seq x seq matrix, which needs
++    # 8 GiB for a single SD1.5 self-attention layer at 1024x1024.
++    ENABLE_PYTORCH_ATTENTION = True
+ 
+ 
+ SUPPORT_FP8_OPS: bool = None
+@@ -1525,7 +1530,10 @@ def discard_cuda_async_error():
+         a = torch.tensor([1], dtype=torch.uint8, device=get_torch_device())
+         b = torch.tensor([1], dtype=torch.uint8, device=get_torch_device())
+         _ = a + b
+-        torch.cuda.synchronize()
++        # torch.cuda.synchronize() raises AssertionError on CPU/MPS-only builds
++        # and would escape this handler, killing the worker loop.
++        if torch.cuda.is_available():
++            torch.cuda.synchronize()
+     except torch.AcceleratorError:
+         pass
+ 

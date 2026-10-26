@@ -24,12 +24,25 @@ let
   # `hash` together (hash: `nix-prefetch-url --unpack`); the service re-syncs
   # the app directory and rebuilds the Python environment when `rev` changes.
   rev = "d880e8b8c8852d808a90399a973be1783a939424";
-  source = pkgs.fetchFromGitHub {
-    owner = "Haoming02";
-    repo = "sd-webui-forge-classic";
-    inherit rev;
-    hash = "sha256-tTMTGjJX0PBGbXLxRWeiuMM4GyH8N6V75EKCxMkByuE=";
+
+  # Local patches on top of `rev`; the MPS attention fixes walk attention in
+  # query blocks so 1024x1024 generations fit under the watermark cap instead
+  # of materialising an ~8 GiB matrix in one allocation. Bump `patchTag` when
+  # the patch set changes so the service re-syncs its writable copy; a patch
+  # that stops applying after a rev bump fails the build loudly.
+  patchTag = "mps-attention.1";
+  source = pkgs.applyPatches {
+    src = pkgs.fetchFromGitHub {
+      owner = "Haoming02";
+      repo = "sd-webui-forge-classic";
+      inherit rev;
+      hash = "sha256-tTMTGjJX0PBGbXLxRWeiuMM4GyH8N6V75EKCxMkByuE=";
+    };
+    patches = [
+      ./forge-neo-mps-attention.patch
+    ];
   };
+  syncTag = "${rev}+${patchTag}";
 
   # Pre-installed with uv; PyPI wheels include MPS support on Apple Silicon.
   # Everything else (the pinned gradio, extension requirements) is left to
@@ -61,10 +74,10 @@ let
       # Sync the pinned app source into the writable root. rsync merges, so
       # models/, outputs/, saved configs and extensions survive updates; the
       # --chmod makes the otherwise read-only store copies writable.
-      if [ "$(cat "$ROOT/.nix-source-rev" 2>/dev/null || true)" != ${escapeShellArg rev} ]; then
-        echo "forge-neo: syncing app files (${rev})"
+      if [ "$(cat "$ROOT/.nix-source-rev" 2>/dev/null || true)" != ${escapeShellArg syncTag} ]; then
+        echo "forge-neo: syncing app files (${syncTag})"
         rsync -a --chmod=Du+w,Fu+w ${escapeShellArg "${source}/"} "$ROOT"/
-        printf '%s\n' ${escapeShellArg rev} > "$ROOT/.nix-source-rev"
+        printf '%s\n' ${escapeShellArg syncTag} > "$ROOT/.nix-source-rev"
       fi
 
       # (Re)build the venv when the pin, interpreter or package list changes.
