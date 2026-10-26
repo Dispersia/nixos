@@ -189,6 +189,16 @@ in
           HOME = home;
           GIT_SSL_CAINFO = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
           SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+          # PyTorch's MPS allocator defaults assume a dedicated GPU: it may grow
+          # its pool to 1.7x torch.mps.recommended_max_memory() (≈20 GB on the
+          # 16 GB mini) and never returns cached blocks to macOS (low watermark
+          # ratio 0.0). Under load that starves the other services (YomiFin's
+          # OCR sidecar) and can wedge Metal in an uninterruptible wait, leaving
+          # generations stuck at "In queue". Cap the ceiling near 6 GB and hand
+          # idle memory back; a genuine overflow then surfaces as a normal
+          # "MPS backend out of memory" error instead of freezing the machine.
+          PYTORCH_MPS_HIGH_WATERMARK_RATIO = "0.5";
+          PYTORCH_MPS_LOW_WATERMARK_RATIO = "0.4";
         };
       };
     };
