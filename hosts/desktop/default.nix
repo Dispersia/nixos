@@ -12,6 +12,7 @@
     ../../modules/system.nix
     ../../modules/comin.nix
     ../../modules/comfyui.nix
+    ../../modules/forge-neo.nix
     ../../modules/nordvpn.nix
     ../../modules/tailscale.nix
     ../../modules/printing.nix
@@ -55,6 +56,17 @@
     user = username;
     # Tailnet address for the home-server gateway, loopback for local use.
     listenAddress = "100.79.114.61,127.0.0.1";
+  };
+
+  # Forge Neo (the A1111-style WebUI the Mac mini runs) beside ComfyUI, sharing
+  # ComfyUI's model folders: checkpoints, LoRAs, embeddings, VAEs and upscalers
+  # are symlinked, so both UIs see the same files. `listen` binds 0.0.0.0;
+  # the firewall keeps the LAN out and allows the tailnet.
+  services.forge-neo = {
+    enable = true;
+    user = username;
+    listen = true;
+    sharedModelsDir = "${config.services.comfyuiUv.dataDir}/models";
   };
 
   networking.hostName = hostName;
