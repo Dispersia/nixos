@@ -42,7 +42,9 @@ let
       tls {
         get_certificate tailscale
       }
-      reverse_proxy 127.0.0.1:${toString cfg.routes.${cfg.tailscaleRoute}.port}
+      reverse_proxy ${cfg.routes.${cfg.tailscaleRoute}.host}:${
+        toString cfg.routes.${cfg.tailscaleRoute}.port
+      }
     }
   '';
 
@@ -80,7 +82,7 @@ let
     ${scheme}://${fqdn name} {
       bind ${cfg.listenAddress}
       ${tlsConfig}
-      reverse_proxy 127.0.0.1:${toString route.port}
+      reverse_proxy ${route.host}:${toString route.port}
       ${route.extraConfig}
     }
   '';
@@ -139,9 +141,20 @@ in
       type = types.attrsOf (
         types.submodule {
           options = {
+            host = mkOption {
+              type = types.str;
+              default = "127.0.0.1";
+              example = "desktop.tail1234.ts.net";
+              description = ''
+                Backend host to reverse proxy to. The default suits services on
+                this machine; point it at another host (a MagicDNS name or
+                address reachable over the tailnet) for services running
+                elsewhere.
+              '';
+            };
             port = mkOption {
               type = types.port;
-              description = "Local loopback port to reverse proxy to.";
+              description = "Port the service listens on (`host` defaults to loopback).";
             };
             extraConfig = mkOption {
               type = types.lines;

@@ -4,12 +4,14 @@
   lib,
   hostName,
   inputs,
+  username,
   ...
 }:
 {
   imports = [
     ../../modules/system.nix
     ../../modules/comin.nix
+    ../../modules/comfyui.nix
     ../../modules/nordvpn.nix
     ../../modules/tailscale.nix
     ../../modules/printing.nix
@@ -41,6 +43,18 @@
   services.displayManager.sddm = {
     enable = lib.mkForce true;
     wayland.enable = true;
+  };
+
+  # Image generation on the 7900 XT. The first start installs ROCm torch and
+  # the rest of the requirements into ~/ComfyUI/venv (several GB); after that,
+  # models go in ~/ComfyUI/models/<type>/ and custom nodes in
+  # ~/ComfyUI/custom_nodes/. Bound to the tailnet address so home-server's
+  # Caddy can reach it; it is published as https://comfy.home.arpa/.
+  services.comfyuiUv = {
+    enable = true;
+    user = username;
+    # Tailnet address for the home-server gateway, loopback for local use.
+    listenAddress = "100.79.114.61,127.0.0.1";
   };
 
   networking.hostName = hostName;

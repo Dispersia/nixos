@@ -251,6 +251,12 @@ in
       flaresolverr = {
         port = 8191;
       };
+      # ComfyUI runs on the desktop (AMD GPU) and listens on its tailnet
+      # address; Caddy proxies to it over the tailnet.
+      comfy = {
+        host = "desktop.tail7c1ddb.ts.net";
+        port = 8188;
+      };
     };
   };
 
