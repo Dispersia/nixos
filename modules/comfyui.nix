@@ -58,10 +58,19 @@ let
         printf '%s\n' ${escapeShellArg rev} > "$ROOT/.nix-source-rev"
       fi
 
-      # NixOS has no /usr/lib, where the PyPI/ROCm wheels expect to find
-      # libstdc++; point the loader at nixpkgs' gcc runtime instead.
+      # NixOS has no /usr/lib where the wheels expect to find their C++
+      # runtime and the compression libraries the bundled ROCm libs (comgr,
+      # hip, aotriton) link against; point the loader at nixpkgs' copies.
       export LD_LIBRARY_PATH=${
-        escapeShellArg (lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib ])
+        escapeShellArg (
+          lib.makeLibraryPath [
+            pkgs.stdenv.cc.cc.lib
+            pkgs.zstd
+            pkgs.zlib
+            pkgs.xz
+            pkgs.bzip2
+          ]
+        )
       }''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 
       # (Re)build the venv when the pin or package lists change. The uv cache
