@@ -47,8 +47,13 @@ let
       mkdir -p "$src"
       if [ -L "$dst" ]; then return 0; fi
       if [ -d "$dst" ]; then
-        find "$dst" -mindepth 1 -maxdepth 1 -name 'put_*_here' -delete
+        # Drop placeholders (both naming styles), merge anything else into the
+        # shared folder, then drop placeholders again: files that existed in
+        # both places are skipped by `mv -n` and would otherwise keep the
+        # directory non-empty. Nothing but placeholders is ever deleted.
+        find "$dst" -mindepth 1 -maxdepth 1 \( -name 'put_*_here' -o -name 'Put * here.txt' \) -delete
         find "$dst" -mindepth 1 -maxdepth 1 -exec mv -n -t "$src" {} +
+        find "$dst" -mindepth 1 -maxdepth 1 \( -name 'put_*_here' -o -name 'Put * here.txt' \) -delete
         rmdir "$dst" 2>/dev/null || {
           echo "forge-neo: $dst still has files after merging, leaving it as a real directory"
           return 0
@@ -83,12 +88,15 @@ let
 
       # Sync the pinned app source into the writable root. rsync merges, so
       # models/, outputs/, saved configs and extensions survive updates; the
-      # --chmod makes the otherwise read-only store copies writable.
-      # -K keeps the shared-model symlinks (see `sharedModelsDir` below) in
-      # place instead of replacing them with real directories.
+      # --chmod makes the otherwise read-only store copies writable. -K keeps
+      # the shared-model symlinks (see `sharedModelsDir` below) in place, and
+      # the placeholders are skipped so they neither litter the shared folders
+      # nor block the sharing.
       if [ "$(cat "$ROOT/.nix-source-rev" 2>/dev/null || true)" != ${escapeShellArg rev} ]; then
         echo "forge-neo: syncing app files (${rev})"
-        rsync -a -K --chmod=Du+w,Fu+w ${escapeShellArg "${source}/"} "$ROOT"/
+        rsync -a -K --chmod=Du+w,Fu+w \
+          --exclude 'Put * here.txt' --exclude 'put_*_here' \
+          ${escapeShellArg "${source}/"} "$ROOT"/
         printf '%s\n' ${escapeShellArg rev} > "$ROOT/.nix-source-rev"
       fi
 
