@@ -15,7 +15,6 @@
     ../development/opencode
     ../development/postgresql
     ../development/postman
-    ../development/vscode
 
     ../environment/alacritty
     ../environment/brave

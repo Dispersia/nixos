@@ -11,14 +11,12 @@
     ../development/git
     ../development/kicad
     ../development/kubectl
-    ../development/lmms
     ../development/neovim
     ../development/node
     ../development/opencode
     ../development/postgresql
     ../development/postman
     ../development/unityhub
-    ../development/vscode
 
     ../environment/alacritty
     ../environment/brave
