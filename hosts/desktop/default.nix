@@ -89,16 +89,36 @@
     powerOnBoot = true;
   };
 
+  # Dual-boot Bluetooth: both OSes drive the same physical adapter, so the
+  # "Audioengine ONE" headset (01:29:B5:0A:13:BD) only authenticates when the
+  # BR/EDR link key matches on both sides. Windows keeps its copy in
+  # HKLM\SYSTEM\CurrentControlSet\Services\BTHPORT\Parameters\Keys\<adapter>\<device>
+  # (readable only as SYSTEM). Before bluetoothd starts, mount the Windows
+  # volume read-only, pull the key out of the SYSTEM hive, and write it into
+  # BlueZ's info file, so the headset keeps working on Linux after any
+  # re-pair on Windows. Logic lives in ./bluetooth-link-key-sync.sh.
   systemd.services.bluetooth-link-key-sync = {
     description = "Sync BR/EDR link key with Windows dual-boot";
     before = [ "bluetooth.service" ];
     wantedBy = [ "bluetooth.service" ];
-    serviceConfig.Type = "oneshot";
-    script = ''
-      info="/var/lib/bluetooth/00:1A:7D:DA:71:15/01:29:B5:0A:13:BD/info"
-      [ -f "$info" ] || exit 0
-      ${pkgs.gnused}/bin/sed -i 's/^Key=.*/Key=8D45FD33B5A7B9B60638BC91B6D038FC/' "$info"
-    '';
+    # Make sure /dev/disk/by-uuid is populated before we go looking for the
+    # Windows volume.
+    after = [ "local-fs.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      # Never let a slow or locked Windows volume stall the boot.
+      TimeoutStartSec = "45";
+    };
+    path = with pkgs; [
+      coreutils
+      gnused
+      gnugrep
+      gawk
+      util-linux
+      ntfs3g
+      hivex
+    ];
+    script = builtins.readFile ./bluetooth-link-key-sync.sh;
   };
 
   system.stateVersion = "26.11";
