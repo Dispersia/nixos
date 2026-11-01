@@ -188,10 +188,13 @@ in
       }
     ];
 
+    # `command` (not a hand-written ProgramArguments) makes nix-darwin wrap the
+    # program in `/bin/wait4path /nix/store && exec ...`; without it the daemon
+    # can race the /nix mount at boot and be marked "Missing executable".
     launchd.daemons.forge-neo = {
+      command = "${service}/bin/forge-neo";
       serviceConfig = {
         Label = "dev.forge-neo.webui";
-        ProgramArguments = [ "${service}/bin/forge-neo" ];
         UserName = cfg.user;
         KeepAlive = true;
         RunAtLoad = true;

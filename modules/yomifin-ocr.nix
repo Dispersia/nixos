@@ -132,9 +132,12 @@ in
       pkgs.python3
     ];
 
+    # `command` (not a hand-written ProgramArguments) makes nix-darwin wrap the
+    # program in `/bin/wait4path /nix/store && exec ...`; without it the daemon
+    # can race the /nix mount at boot and be marked "Missing executable".
     launchd.daemons.yomifin-ocr = {
+      command = "${service}/bin/yomifin-ocr";
       serviceConfig = {
-        ProgramArguments = [ "${service}/bin/yomifin-ocr" ];
         UserName = cfg.user;
         KeepAlive = true;
         RunAtLoad = true;

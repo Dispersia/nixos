@@ -94,10 +94,16 @@ in
 
     # A system daemon (not a per-user agent) so it starts at boot without a
     # logged-in GUI session, like the yomifin sidecars on this host.
+    #
+    # Use `command` rather than a hand-written ProgramArguments: nix-darwin
+    # wraps it in `/bin/wait4path /nix/store && exec ...`. Without that guard
+    # the daemon can lose the boot race against the /nix volume mount, and
+    # launchd then marks it "Missing executable detected" and never restarts
+    # it (KeepAlive does not apply to that state).
     launchd.daemons.kimaki = {
+      command = "${kimaki}/bin/kimaki ${lib.escapeShellArgs args}";
       serviceConfig = {
         Label = "dev.kimaki.bot";
-        ProgramArguments = [ "${kimaki}/bin/kimaki" ] ++ args;
         UserName = cfg.user;
         RunAtLoad = true;
         KeepAlive = true;
