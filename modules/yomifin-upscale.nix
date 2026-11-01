@@ -36,7 +36,10 @@ let
       SRC_DIR="$STATE_DIR/src"
       EXTRAS=${lib.escapeShellArg extras}
       STAMP="$STATE_DIR/.extras"
-      STAMP_VALUE="$EXTRAS|$SOURCE"
+      # The interpreter is part of the stamp: when a nixpkgs bump moves
+      # cfg.python, the old store path can be garbage-collected and the
+      # venv's python symlink dangles. Include it so the venv is rebuilt.
+      STAMP_VALUE="$EXTRAS|$SOURCE|${cfg.python}"
 
       export UV_PYTHON_DOWNLOADS=never
       export UV_CACHE_DIR=${lib.escapeShellArg "${home}/Library/Caches/uv"}
@@ -44,7 +47,7 @@ let
 
       mkdir -p "$STATE_DIR" "$MODELS_DIR"
 
-      if [ ! -x "$VENV_DIR/bin/uvicorn" ] || [ "$(cat "$STAMP" 2>/dev/null || true)" != "$STAMP_VALUE" ]; then
+      if [ ! -x "$VENV_DIR/bin/uvicorn" ] || [ ! -x "$VENV_DIR/bin/python" ] || [ "$(cat "$STAMP" 2>/dev/null || true)" != "$STAMP_VALUE" ]; then
         echo "yomifin-upscale: (re)building venv (extras: $EXTRAS)"
         rm -rf "$VENV_DIR"
         # The source lives in the read-only Nix store, but setuptools writes
