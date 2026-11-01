@@ -8,8 +8,8 @@ lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
 
     add_cert() {
       db="$1"
-      ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$db")"
-      if [ ! -e "$db" ]; then
+      ${pkgs.coreutils}/bin/mkdir -p "$db"
+      if [ ! -e "$db/cert9.db" ]; then
         ${pkgs.nss.tools}/bin/certutil -N --empty-password -d "sql:$db"
       fi
       if ! ${pkgs.nss.tools}/bin/certutil -d "sql:$db" -L -n "$nick" >/dev/null 2>&1; then

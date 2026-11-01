@@ -32,6 +32,11 @@
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
+    nixos-wsl = {
+      url = "github:nix-community/NixOS-WSL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     comin = {
       url = "github:nlewo/comin";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -216,6 +221,7 @@
             work-desktop = mkNixosHost "work-desktop" "dispe";
             desktop = mkNixosHost "desktop" "dispe";
             home-server = mkServerHost "home-server" "dispe";
+            wsl = mkNixosHost "wsl" "nixos";
             android = mkAndroidHost "phone" "dispe";
           };
 
