@@ -37,6 +37,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # OpenDesign — the local-first design workspace (`od` CLI + daemon + web UI).
+    # Upstream retired its official Nix distribution in Aug 2026
+    # (nexu-io/open-design#7644 removed the flake and Home Manager/NixOS
+    # modules), so pin the last commit that still ships them.
+    open-design = {
+      url = "github:nexu-io/open-design/db9ebb7ba84d81dffdd21de248cbcd992c791836";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     comin = {
       url = "github:nlewo/comin";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -54,6 +63,24 @@
         naersk.inputs.nixpkgs.follows = "nixpkgs";
         rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
       };
+    };
+
+    # YomiFin sidecars. Both flakes live in subdirectories of the same checkout
+    # (`ocr/flake.nix` and `upscale/flake.nix`); they follow this flake's nixpkgs
+    # so python/uv/models come from a single closure.
+    #
+    # These are `path:` inputs so the Mac mini always evaluates the working
+    # checkout. Once the packaging is pushed, switch to
+    # `github:Dispersia/yomifin?dir=ocr` / `?dir=upscale` so comin no longer
+    # depends on a local checkout.
+    yomifin-ocr = {
+      url = "path:/Users/dispe/development/yomifin?dir=ocr";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    yomifin-upscale = {
+      url = "path:/Users/dispe/development/yomifin?dir=upscale";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
