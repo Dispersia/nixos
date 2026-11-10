@@ -8,11 +8,22 @@
 {
   imports = [
     inputs.nixos-wsl.nixosModules.default
+    ../../modules/comin.nix
+    ../../modules/kimaki.nix
   ];
 
   wsl = {
     enable = true;
     defaultUser = username;
+  };
+
+  # Kimaki (the Discord bot for OpenCode 2) in gateway mode. It starts at boot
+  # and keeps running; the first start prints a one-time install URL that has
+  # to be authorized once in Discord. Read it with `journalctl -u kimaki -f`.
+  services.kimaki = {
+    enable = true;
+    user = username;
+    machineName = hostName;
   };
 
   networking.hostName = hostName;
