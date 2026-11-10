@@ -1,29 +1,35 @@
 {
   pkgs,
+  inputs,
   lib,
   config,
   ...
 }:
 let
+  # `brave` was removed from nixpkgs-unstable (no maintainers left to unblock
+  # security issues), so take it from the pinned nixpkgs-stable. Everything
+  # else stays on the unstable `pkgs`.
+  stable = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+
   brave = if pkgs.stdenv.hostPlatform.isLinux then
-   pkgs.brave // {
+   stable.brave // {
     override =
       {
         commandLineArgs ? "",
         ...
       }:
-      pkgs.brave.overrideAttrs (old: {
+      stable.brave.overrideAttrs (old: {
         preFixup = (old.preFixup or "") + ''
           gappsWrapperArgs+=(
             --add-flags ${lib.escapeShellArg commandLineArgs}
-            --prefix LD_LIBRARY_PATH : ${pkgs.vulkan-loader}/lib
+            --prefix LD_LIBRARY_PATH : ${stable.vulkan-loader}/lib
             --prefix XDG_DATA_DIRS : /run/opengl-driver/share
           )
         '';
       });
   }
- else
-    pkgs.brave;
+  else
+    stable.brave;
 in
 {
   programs.chromium = {
