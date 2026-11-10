@@ -8,7 +8,14 @@ let
   enableOpenDesign = pkgs.stdenv.hostPlatform.isLinux;
 in
 {
-  imports = [ inputs.open-design.homeManagerModules.default ];
+  # Vendored (and de-deprecated) copy of the module upstream retired in
+  # nexu-io/open-design#7644; see open-design/home-manager.nix.
+  imports = [
+    (import ./open-design/home-manager.nix {
+      moduleCommon = import ./open-design/module-common.nix;
+      flake = inputs.open-design;
+    })
+  ];
 
   # Daemon API on `port` (7457), static web UI on `webFrontend.port` (5174).
   services.open-design = lib.mkIf enableOpenDesign {
