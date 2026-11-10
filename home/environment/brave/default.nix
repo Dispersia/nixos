@@ -29,7 +29,13 @@ in
   programs.chromium = {
     enable = true;
     package = brave;
-    extensions = [
+    # macOS 27 (Golden Gate) protects Brave's user-data directory with the new
+    # kTCCServiceSystemPolicyAppDataDetailed / com.apple.macl rule, so Home
+    # Manager can no longer create External Extensions/*.json there (native
+    # messaging hosts are the only exempt path). Only manage extensions on
+    # Linux; on macOS install them from the Web Store, where they persist in
+    # the profile (and restore via Brave Sync).
+    extensions = lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       { id = "eimadpbcbfnmbkopoojfekhnkhdbieeh"; } # dark-reader
       { id = "nngceckbapebfimnlniiiahkandclblb"; } # bitwarden
       { id = "pnmaklegiibbioifkmfkgpfnmdehdfan"; } # 10ten
