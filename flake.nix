@@ -40,9 +40,12 @@
     # OpenDesign — the local-first design workspace (`od` CLI + daemon + web UI).
     # Upstream retired its official Nix distribution in Aug 2026
     # (nexu-io/open-design#7644 removed the flake and Home Manager/NixOS
-    # modules), so pin the last commit that still ships them.
+    # modules). We track the Dispersia fork's `opencode2` branch, which keeps the
+    # flake + Home Manager module (based on the last upstream commit that shipped
+    # them) and adds an `opencode2` runtime definition so OpenCode 2 works as the
+    # local design agent.
     open-design = {
-      url = "github:nexu-io/open-design/db9ebb7ba84d81dffdd21de248cbcd992c791836";
+      url = "github:Dispersia/open-design/opencode2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

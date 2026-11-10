@@ -559,17 +559,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1788163376,
-        "narHash": "sha256-8xECPOa+58m8XkPs8QqnFnqEVDSFD2Vu0LcS8DJl7Lg=",
-        "owner": "nexu-io",
+        "lastModified": 1794344326,
+        "narHash": "sha256-sZSDQaCaXsI59ztHE+14E9IZRTeP+regrYLtmow8AQg=",
+        "owner": "Dispersia",
         "repo": "open-design",
-        "rev": "db9ebb7ba84d81dffdd21de248cbcd992c791836",
+        "rev": "cfcf9055df85f885322156e91099a31c8a9e9678",
         "type": "github"
       },
       "original": {
-        "owner": "nexu-io",
+        "owner": "Dispersia",
+        "ref": "opencode2",
         "repo": "open-design",
-        "rev": "db9ebb7ba84d81dffdd21de248cbcd992c791836",
         "type": "github"
       }
     },
