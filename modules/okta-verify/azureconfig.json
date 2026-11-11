@@ -1,0 +1,5 @@
+{
+  "configuration": {
+    "AzureAppConfiguration": "Endpoint=https://okta-linux-featureflag-edge-b8ejceh5d3hpfec4.z01.azurefd.net;Id=0;Secret=MA=="
+  }
+}

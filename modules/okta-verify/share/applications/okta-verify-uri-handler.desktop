@@ -1,0 +1,17 @@
+[Desktop Entry]
+Version=7.2.0.0
+Type=Application
+Name=Okta Verify
+Name[fr]=OktaVerify
+Name[fr_CA]=OktaVerify
+Comment=Okta Verify URI Handler
+Exec=/opt/okta/verify/oktaverify --uri %u
+Icon=okta-verify
+Terminal=false
+Categories=Security;Utility;
+StartupNotify=false
+NoDisplay=true
+# Okta Verify re-checks this scheme at startup to detect another application
+# claiming it. If this value changes, update the matching constant in
+# UriSchemeRegistrationChecker or that check will report a false positive.
+MimeType=x-scheme-handler/com-okta-authenticator;
