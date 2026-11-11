@@ -8,6 +8,11 @@
 
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.11";
 
+    # Anki 26.09.4 in current nixpkgs fails to build (uv cannot resolve
+    # hatchling/tomlkit offline). Pinned to the last rev that had 26.09.3;
+    # drop this input once nixpkgs fixes it.
+    nixpkgs-anki.url = "github:nixos/nixpkgs/3ec636362e1816bc2f0888fa0fa2c69f1bc9e504";
+
     nix-darwin = {
       url = "github:nix-darwin/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";

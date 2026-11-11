@@ -1,4 +1,9 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  config,
+  inputs,
+  ...
+}:
 let
   # Anki's prefs21.db is generated in the read-only Nix store, so the AnkiWeb
   # login can never be persisted by Anki itself. Instead, these files hold the
@@ -157,7 +162,11 @@ in
 {
   programs.anki = {
     enable = true;
-    package = if pkgs.stdenv.hostPlatform.isDarwin then pkgs.anki-bin else pkgs.anki;
+    package =
+      if pkgs.stdenv.hostPlatform.isDarwin then
+        pkgs.anki-bin
+      else
+        inputs.nixpkgs-anki.legacyPackages.${pkgs.stdenv.hostPlatform.system}.anki;
     addons = [
       (pkgs.ankiAddons.anki-connect.withConfig {
         config = {
