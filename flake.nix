@@ -68,21 +68,17 @@
       };
     };
 
-    # YomiFin sidecars. Both flakes live in subdirectories of the same checkout
+    # YomiFin sidecars. Both flakes live in subdirectories of the same repo
     # (`ocr/flake.nix` and `upscale/flake.nix`); they follow this flake's nixpkgs
-    # so python/uv/models come from a single closure.
-    #
-    # These are `path:` inputs so the Mac mini always evaluates the working
-    # checkout. Once the packaging is pushed, switch to
-    # `github:Dispersia/yomifin?dir=ocr` / `?dir=upscale` so comin no longer
-    # depends on a local checkout.
+    # so python/uv/models come from a single closure. The repo is private, so
+    # these use the SSH form and need a GitHub-authorized key on the host.
     yomifin-ocr = {
-      url = "path:/Users/dispe/development/yomifin?dir=ocr";
+      url = "git+ssh://git@github.com/Dispersia/yomifin?dir=ocr";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     yomifin-upscale = {
-      url = "path:/Users/dispe/development/yomifin?dir=upscale";
+      url = "git+ssh://git@github.com/Dispersia/yomifin?dir=upscale";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

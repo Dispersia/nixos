@@ -374,11 +374,11 @@
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
-        "lastModified": 1794317113,
-        "narHash": "sha256-0YxNCB01/Shk1S1EumNva5CcT2XCrvpGm24/mTwQRBw=",
+        "lastModified": 1794397294,
+        "narHash": "sha256-ldRd1UWymZ+B1ngo5vNM2WYUbUYE0p8yTY6XIZJoc7A=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "87add0847ae4744de25a41a9c77a9ef257bea01b",
+        "rev": "3c4f3e7ccf54c7279659536160f9c58de38073c1",
         "type": "github"
       },
       "original": {
@@ -436,11 +436,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792982269,
-        "narHash": "sha256-5R5CFIKj06qTQevhg/rCFUSAMxfNgdn0oIBL57R7u0Y=",
+        "lastModified": 1794368463,
+        "narHash": "sha256-ncpk0eCCyhU7M7U/PGbtwb1PXqobksBBYbJJ13abV2g=",
         "owner": "nix-community",
         "repo": "NixOS-WSL",
-        "rev": "e45b24b7df093299072b13bf3144ed0ee340e769",
+        "rev": "05721a428830972f025a8575b1a19c418d422d1b",
         "type": "github"
       },
       "original": {
@@ -536,11 +536,11 @@
         "treefmt-nix": "treefmt-nix_3"
       },
       "locked": {
-        "lastModified": 1794316515,
-        "narHash": "sha256-RX93978JJ7V9kdggYh3T8LeEltQvwT58vpRJn7OqU54=",
+        "lastModified": 1794399753,
+        "narHash": "sha256-Z1ns+bs5NjMHfv76h0FCLuiNNN8WsWXtvHlThaFEoWA=",
         "owner": "karaolidis",
         "repo": "nix-obsidian-extensions",
-        "rev": "7650df3939739d41d3526766909ecf6fac71936f",
+        "rev": "cc56dfa30e083f945a0f48bff7214e891e2d112f",
         "type": "github"
       },
       "original": {
@@ -880,15 +880,18 @@
       },
       "locked": {
         "dir": "ocr",
-        "lastModified": 1792990020,
-        "narHash": "sha256-umx+IMn4L/FK9b3pNvBxVPqmwVqclwFZDNLUgM4jniM=",
-        "path": "/Users/dispe/development/yomifin",
-        "type": "path"
+        "lastModified": 1792795445,
+        "narHash": "sha256-uzAPet/qE4CLlYhbEbcOcZSb3GupsjDJdfyRApzG0Kc=",
+        "ref": "refs/heads/master",
+        "rev": "49347dc1568bf64b75e1de76cce47981786bde3b",
+        "revCount": 86,
+        "type": "git",
+        "url": "ssh://git@github.com/Dispersia/yomifin"
       },
       "original": {
         "dir": "ocr",
-        "path": "/Users/dispe/development/yomifin",
-        "type": "path"
+        "type": "git",
+        "url": "ssh://git@github.com/Dispersia/yomifin"
       }
     },
     "yomifin-upscale": {
@@ -900,15 +903,18 @@
       },
       "locked": {
         "dir": "upscale",
-        "lastModified": 1792990020,
-        "narHash": "sha256-umx+IMn4L/FK9b3pNvBxVPqmwVqclwFZDNLUgM4jniM=",
-        "path": "/Users/dispe/development/yomifin",
-        "type": "path"
+        "lastModified": 1792795445,
+        "narHash": "sha256-uzAPet/qE4CLlYhbEbcOcZSb3GupsjDJdfyRApzG0Kc=",
+        "ref": "refs/heads/master",
+        "rev": "49347dc1568bf64b75e1de76cce47981786bde3b",
+        "revCount": 86,
+        "type": "git",
+        "url": "ssh://git@github.com/Dispersia/yomifin"
       },
       "original": {
         "dir": "upscale",
-        "path": "/Users/dispe/development/yomifin",
-        "type": "path"
+        "type": "git",
+        "url": "ssh://git@github.com/Dispersia/yomifin"
       }
     }
   },
