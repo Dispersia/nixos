@@ -15,9 +15,18 @@ let
     NIX_LD_LIBRARY_PATH = "/run/current-system/sw/share/nix-ld/lib";
   };
 
+  # The authenticator service rejects callers whose environment carries
+  # LD_LIBRARY_PATH (treated as code injection), so launch the app without it.
+  launcher = pkgs.writeShellScriptBin "okta-verify" ''
+    unset LD_LIBRARY_PATH LD_PRELOAD
+    exec /opt/okta/verify/oktaverify "$@"
+  '';
+
   desktopIntegration = pkgs.runCommand "okta-verify-desktop" { } ''
     mkdir -p $out/share
-    cp -r ${./share}/applications ${./share}/icons $out/share/
+    cp -r --no-preserve=mode ${./share}/applications ${./share}/icons $out/share/
+    substituteInPlace $out/share/applications/*.desktop \
+      --replace-fail /opt/okta/verify/oktaverify ${launcher}/bin/okta-verify
   '';
 in
 {
@@ -51,7 +60,10 @@ in
   };
   users.groups.okta-ff = { };
 
-  environment.systemPackages = [ desktopIntegration ];
+  environment.systemPackages = [
+    launcher
+    desktopIntegration
+  ];
 
   systemd.tmpfiles.rules = [
     "d /etc/okta 1775 root okta-ff -"
