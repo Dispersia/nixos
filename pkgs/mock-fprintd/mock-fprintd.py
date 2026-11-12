@@ -130,6 +130,7 @@ class MockFprintd:
     def on_manager_call(
         self, _connection, _sender, _path, _iface, method, _params, invocation
     ):
+        log(f"manager call: {method}")
         if method == "GetDevices":
             invocation.return_value(GLib.Variant("(ao)", ([DEVICE_PATH],)))
         elif method == "GetDefaultDevice":
@@ -145,6 +146,7 @@ class MockFprintd:
     def on_device_call(
         self, _connection, _sender, _path, _iface, method, params, invocation
     ):
+        log(f"device call: {method} {params.unpack()}")
         if method == "ListEnrolledFingers":
             # pam_fprintd skips the device entirely unless at least one finger is
             # advertised as enrolled, so this must stay non-empty.
@@ -202,6 +204,7 @@ class MockFprintd:
         )
 
     def emit_verify_match(self):
+        log("verify result: verify-match")
         self.emit("VerifyFingerSelected", GLib.Variant("(s)", (FINGER,)))
         self.emit("VerifyStatus", GLib.Variant("(sb)", ("verify-match", True)))
         return GLib.SOURCE_REMOVE
