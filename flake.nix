@@ -106,16 +106,12 @@
         { system, ... }:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          lib = nixpkgs.lib;
         in
         {
           formatter = pkgs.nixfmt-tree;
 
           packages = {
             neovim = pkgs.neovim;
-          }
-          // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-            mock-fprintd = pkgs.callPackage ./pkgs/mock-fprintd { };
           };
         };
 

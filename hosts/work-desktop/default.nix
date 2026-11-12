@@ -11,18 +11,9 @@
     ../../modules/comin.nix
     ../../modules/tailscale.nix
     ../../modules/okta-verify
-    ../../modules/mock-fprintd.nix
 
     ./hardware-configuration.nix
   ];
-
-  # Testing aid: pretend a fingerprint reader exists and always matches.
-  # Services gated by `pam_fprintd` (login/sddm) accept any "fingerprint".
-  # Remove before using this host for anything that needs real security.
-  services.mock-fprintd = {
-    enable = true;
-    pam.enable = true;
-  };
 
   boot.loader = {
     systemd-boot.enable = true;
