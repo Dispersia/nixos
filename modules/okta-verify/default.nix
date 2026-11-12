@@ -52,6 +52,8 @@ in
     glib
     dbus.lib
     tpm2-tss
+    # Okta Verify bundles PCSC-Sharp, which loads libpcsclite for smart cards.
+    pcsclite.lib
   ];
 
   users.users.okta-ff = {
@@ -60,9 +62,14 @@ in
   };
   users.groups.okta-ff = { };
 
+  # YubiKey smart-card (CCID) access for Okta Verify.
+  services.pcscd.enable = true;
+  services.udev.packages = [ pkgs.yubikey-personalization ];
+
   environment.systemPackages = [
     launcher
     desktopIntegration
+    pkgs.yubikey-manager
   ];
 
   systemd.tmpfiles.rules = [
