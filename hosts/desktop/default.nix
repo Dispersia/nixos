@@ -22,7 +22,6 @@
     inputs.globalprotect-openconnect.nixosModules.default
 
     ./hardware-configuration.nix
-    ./windows-vm.nix
   ];
 
   programs.globalprotect-openconnect.enable = true;
