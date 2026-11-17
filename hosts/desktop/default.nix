@@ -14,6 +14,7 @@
     ../../modules/comfyui.nix
     ../../modules/forge-neo.nix
     ../../modules/nordvpn.nix
+    ../../modules/okta-verify
     ../../modules/tailscale.nix
     ../../modules/printing.nix
     ../../modules/diagnostics.nix
