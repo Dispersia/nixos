@@ -209,6 +209,8 @@ in
     enable = true;
     openFirewall = true;
     port = 5056;
+    # SeerrNG rejects symlinks in its log path; use the DynamicUser backing directory.
+    configDir = "/var/lib/private/seerrng";
   };
 
   services.tailnetGateway = {

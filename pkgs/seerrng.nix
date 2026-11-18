@@ -55,6 +55,23 @@ stdenv.mkDerivation {
   dontBuild = true;
   dontStrip = true;
 
+  # patchelf overwrites the initializer in upstream's libvips when growing its
+  # ELF headers. Keep that library out of fixup, then copy it back from source.
+  preFixup = ''
+    vips=(node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/node_modules/@img/sharp-libvips-linux-x64/lib/libvips-cpp.so.*)
+    test "''${#vips[@]}" -eq 1 && test -f "$vips" || exit 1
+    rm "$out/share/seerrng/$vips"
+    restoreLibvips() { cp -p "$vips" "$out/share/seerrng/$vips"; }
+    postFixupHooks+=(restoreLibvips)
+  '';
+
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    (cd "$out/share/seerrng" && node -e 'require("sharp")({ create: { width: 1, height: 1, channels: 3, background: "red" } }).png().toBuffer().catch(e => { console.error(e); process.exitCode = 1; })')
+    runHook postInstallCheck
+  '';
+
   installPhase = ''
     runHook preInstall
 
