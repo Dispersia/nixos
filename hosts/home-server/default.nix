@@ -9,7 +9,6 @@
 {
   imports = [
     ../../modules/jellyfin.nix
-    ../../modules/seerrng.nix
     ../../modules/tailscale.nix
     ../../modules/tailnet-gateway.nix
     ../../modules/nordvpn-netns.nix
