@@ -387,6 +387,26 @@
         "type": "github"
       }
     },
+    "mediarium": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795015181,
+        "narHash": "sha256-2yyw2ivJTXm7DSx5+4/8PVpr9XQsGIHuGS0CXnxJScQ=",
+        "owner": "dispersia",
+        "repo": "Mediarium",
+        "rev": "3c1821ce57522eaa1d514c8d322d9db1ec1e7d75",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dispersia",
+        "repo": "Mediarium",
+        "type": "github"
+      }
+    },
     "naersk": {
       "inputs": {
         "fenix": "fenix",
@@ -666,6 +686,7 @@
         "globalprotect-openconnect": "globalprotect-openconnect",
         "home-manager": "home-manager",
         "llm-agents": "llm-agents",
+        "mediarium": "mediarium",
         "nix-darwin": "nix-darwin",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs_3",

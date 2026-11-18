@@ -17,6 +17,8 @@
     ../../modules/comin.nix
     ../../modules/kimaki.nix
 
+    inputs.mediarium.nixosModules.default
+
     ./cluster-containers.nix
     ./media.nix
     ./nfs.nix

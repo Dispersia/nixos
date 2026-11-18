@@ -213,6 +213,25 @@ in
     configDir = "/var/lib/private/seerrng";
   };
 
+  # Mediarium runs its own search/download stack but shares the NAS libraries
+  # with Sonarr/Radarr/Bazarr. It must use `media` as its primary group:
+  # Synology NFS only evaluates the primary group, so hardlinked imports from
+  # downloads stay readable by Jellyfin.
+  services.mediarium = {
+    enable = true;
+    openFirewall = true;
+    group = "media";
+
+    moviesDir = "${mediaRoot}/movies";
+    tvDir = "${mediaRoot}/shows";
+    downloadsDir = downloadsRoot;
+    # Mediarium calls this option `ebooksDir`; the NAS share is `books`.
+    ebooksDir = "${mediaRoot}/books";
+
+    # musicDir and audiobooksDir keep their defaults under
+    # /var/lib/mediarium/data until those modules are switched on.
+  };
+
   services.tailnetGateway = {
     enable = true;
     address = "100.84.150.49";
@@ -260,6 +279,11 @@ in
       };
       seerrng = {
         port = 5056;
+      };
+      # Mediarium is the library/request front end, so it answers as
+      # request.home.arpa (port 8264).
+      request = {
+        port = 8264;
       };
       flaresolverr = {
         port = 8191;

@@ -59,6 +59,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Mediarium media manager (movies, TV, music, ebooks, audiobooks). Only
+    # home-server enables it; the flake ships its own NixOS module.
+    mediarium = {
+      url = "github:dispersia/Mediarium";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     obsidian-extensions = {
       url = "github:karaolidis/nix-obsidian-extensions";
       inputs.nixpkgs.follows = "nixpkgs";
