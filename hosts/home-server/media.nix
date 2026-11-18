@@ -85,7 +85,20 @@ in
     '';
   };
 
+  systemd.services.qbittorrent.serviceConfig.UMask = "0002";
+
   services.flaresolverr.enable = true;
+
+  # The WebUI password already lives in /var/lib/qBittorrent/qBittorrent.conf;
+  # the credential file that used to seed it is gone, so no LoadCredential here.
+  services.qbittorrent = {
+    enable = true;
+    openFirewall = true;
+    group = "media";
+    webuiPort = 8080;
+    torrentingPort = 6881;
+    extraArgs = [ "--confirm-legal-notice" ];
+  };
 
   # Podman stays enabled for development tooling; no media containers are
   # defined here right now.
@@ -176,6 +189,9 @@ in
       jellyfin = {
         port = 8096;
       };
+      qbittorrent = {
+        port = 8080;
+      };
       # Mediarium is the library/request front end, so it answers as
       # request.home.arpa (port 8264).
       request = {
@@ -202,14 +218,17 @@ in
     tokenFile = "/home/dispe/.secrets/nordvpn-token";
     country = "United States";
     services = [
+      "qbittorrent"
       "flaresolverr"
       "mediarium"
     ];
     ports = [
+      8080
       8191
       8264
     ];
   };
 
   networking.firewall.allowedTCPPorts = [ ];
+  networking.firewall.allowedUDPPorts = [ 6881 ];
 }
