@@ -314,11 +314,13 @@ in
       "qbittorrent"
       "sabnzbd"
       "flaresolverr"
+      "mediarium"
     ];
     ports = [
       8080
       8085
       8191
+      8264
       8989
       7878
       9696
