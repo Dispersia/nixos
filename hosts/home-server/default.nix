@@ -8,6 +8,7 @@
 {
   imports = [
     ../../modules/jellyfin.nix
+    ../../modules/seerrng.nix
     ../../modules/tailscale.nix
     ../../modules/tailnet-gateway.nix
     ../../modules/nordvpn-netns.nix
@@ -40,6 +41,15 @@
     ];
   };
   networking.defaultGateway = "192.168.4.1";
+
+  # eno1 is pinned statically (see above), so DHCP no longer supplies a
+  # resolver. Without this, /etc/resolv.conf is left with no `nameserver` line
+  # and the host cannot resolve anything, which breaks comin's pull from
+  # GitHub and every other outbound HTTPS request.
+  networking.nameservers = [
+    "1.1.1.1"
+    "9.9.9.9"
+  ];
 
   nixpkgs.config.allowUnfreePredicate =
     pkg:
