@@ -11,6 +11,7 @@ let
   mediaDirs = [
     mediaRoot
     "${mediaRoot}/shows"
+    "${mediaRoot}/audiobooks"
     "${mediaRoot}/movies"
     "${mediaRoot}/manga"
     "${mediaRoot}/manhua"
@@ -19,6 +20,7 @@ let
   ];
   libraryDirs = [
     "${mediaRoot}/shows"
+    "${mediaRoot}/audiobooks"
     "${mediaRoot}/movies"
     "${mediaRoot}/manga"
   ];
