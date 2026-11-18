@@ -203,6 +203,14 @@ in
     openFirewall = true;
   };
 
+  # SeerrNG (Seerr fork with music/book/comic/ROM requests) runs alongside
+  # Seerr on a separate port.
+  services.seerrng = {
+    enable = true;
+    openFirewall = true;
+    port = 5056;
+  };
+
   services.tailnetGateway = {
     enable = true;
     address = "100.84.150.49";
@@ -247,6 +255,9 @@ in
       };
       seerr = {
         port = 5055;
+      };
+      seerrng = {
+        port = 5056;
       };
       flaresolverr = {
         port = 8191;
