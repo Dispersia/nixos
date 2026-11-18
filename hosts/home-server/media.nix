@@ -229,9 +229,9 @@ in
     downloadsDir = downloadsRoot;
     # Mediarium calls this option `ebooksDir`; the NAS share is `books`.
     ebooksDir = "${mediaRoot}/books";
+    audiobooksDir = "${mediaRoot}/audiobooks";
 
-    # musicDir and audiobooksDir keep their defaults under
-    # /var/lib/mediarium/data until those modules are switched on.
+    # musicDir keeps its default under /var/lib/mediarium/data.
   };
 
   services.tailnetGateway = {
