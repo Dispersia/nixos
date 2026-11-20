@@ -93,6 +93,17 @@
       url = "git+ssh://git@github.com/Dispersia/yomifin?dir=upscale";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # tutor — AI language learning with local MLX speech. Hosted on this Mac as
+    # services.tutor (see hosts/Aarons-Mac-Mini), served at /tutor behind the
+    # tailnet gateway. `path:` so the Mac always evaluates the working checkout.
+    #
+    # Deliberately *not* following this flake's nixpkgs: tutor pins an FOD hash
+    # for its bun dependency tree, and a different bun would invalidate it. Using
+    # tutor's own nixpkgs keeps the package cached and reproducible.
+    tutor = {
+      url = "path:/Users/dispe/development/tutor";
+    };
   };
 
   outputs =
