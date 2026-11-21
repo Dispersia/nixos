@@ -82,12 +82,12 @@ in
 
     coordinator = mkOption {
       type = types.bool;
-      default = true;
+      default = false;
       description = ''
         Coordinator mode: messages in a project channel go to one long
-        coordinator session that starts threads for the work. Off: every
-        channel message starts its own thread instead. Passed to the bot as
-        `--coordinator false` when disabled.
+        coordinator session that starts threads for the work. Off (the
+        default): every channel message starts its own thread instead. Passed
+        to the bot as `--coordinator false` when disabled.
       '';
     };
 

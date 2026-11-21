@@ -34,7 +34,9 @@ let
   args =
     optional cfg.gateway "--gateway"
     ++ optional (cfg.machineName != "") "--machine-name"
-    ++ optional (cfg.machineName != "") cfg.machineName;
+    ++ optional (cfg.machineName != "") cfg.machineName
+    ++ optional (!cfg.coordinator) "--coordinator"
+    ++ optional (!cfg.coordinator) "false";
 
   # Unlike the Mac Mini, a systemd service on NixOS starts with no /bin on
   # PATH, and npm spawns its install scripts through `sh`. bash supplies that
@@ -89,6 +91,17 @@ in
       description = ''
         Name shown in this machine's Discord category, `Kimaki <name>`.
         Defaults to the hostname when empty.
+      '';
+    };
+
+    coordinator = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Coordinator mode: messages in a project channel go to one long
+        coordinator session that starts threads for the work. Off (the
+        default): every channel message starts its own thread instead. Passed
+        to the bot as `--coordinator false` when disabled.
       '';
     };
 
