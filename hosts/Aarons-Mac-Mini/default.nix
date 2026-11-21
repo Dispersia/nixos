@@ -70,8 +70,11 @@ in
   # Image generation WebUI. The first start installs torch and friends into
   # ~/ForgeNeo/venv (a few GB, takes a few minutes); after that, models go in
   # ~/ForgeNeo/models/<type>/ and extensions in ~/ForgeNeo/extensions/.
+  #
+  # Disabled on this host: the module and its options stay, but no launchd
+  # daemon is deployed. Flip `enable` back to true to bring it up again.
   services.forge-neo = {
-    enable = true;
+    enable = false;
     user = username;
   };
 
@@ -155,7 +158,9 @@ in
   services.tailnetGateway = {
     enable = true;
     hostname = "aarons-mac-mini.tail7c1ddb.ts.net";
-    routes.forge.port = config.services.forge-neo.port;
+    # Forge is disabled above, so nothing listens on its port; the route is kept
+    # here (commented) so it is one uncomment away from coming back.
+    # routes.forge.port = config.services.forge-neo.port;
     routes.tutor.port = config.services.tutor.port;
   };
 
