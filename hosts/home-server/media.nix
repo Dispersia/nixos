@@ -206,6 +206,14 @@ in
         host = "desktop.tail7c1ddb.ts.net";
         port = 8188;
       };
+      # OpenDesign's web UI runs on the Mac mini. Its bundled frontend is a
+      # catch-all listener (see hosts/Aarons-Mac-Mini), so this proxies it
+      # with the design.home.arpa Host preserved, which is what the daemon's
+      # same-origin allowlist expects.
+      design = {
+        host = "aarons-mac-mini.tail7c1ddb.ts.net";
+        port = 5174;
+      };
     };
   };
 
