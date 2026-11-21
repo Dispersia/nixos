@@ -147,6 +147,9 @@ in
     enable = true;
     user = username;
     machineName = hostName;
+    # Keep coordinator mode off: channel messages start their own thread
+    # instead of one long coordinator session per channel.
+    coordinator = false;
   };
 
   # Browser-trusted HTTPS gateway over the tailnet, the macOS equivalent of the

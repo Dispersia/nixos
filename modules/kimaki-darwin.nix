@@ -34,7 +34,9 @@ let
   args =
     optional cfg.gateway "--gateway"
     ++ optional (cfg.machineName != "") "--machine-name"
-    ++ optional (cfg.machineName != "") cfg.machineName;
+    ++ optional (cfg.machineName != "") cfg.machineName
+    ++ optional (!cfg.coordinator) "--coordinator"
+    ++ optional (!cfg.coordinator) "false";
 in
 {
   options.services.kimaki = {
@@ -75,6 +77,17 @@ in
       description = ''
         Name shown in this machine's Discord category, `Kimaki <name>`.
         Defaults to the hostname when empty.
+      '';
+    };
+
+    coordinator = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Coordinator mode: messages in a project channel go to one long
+        coordinator session that starts threads for the work. Off: every
+        channel message starts its own thread instead. Passed to the bot as
+        `--coordinator false` when disabled.
       '';
     };
 
