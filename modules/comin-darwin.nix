@@ -32,10 +32,12 @@ in
     hostname = hostName;
 
     # comin defaults the gRPC socket group to the Linux group `users`, which
-    # macOS does not have, so the lookup fails and the server never starts
-    # ("failed to lookup group users: group: unknown group users"). Empty means
-    # "leave the socket group alone" — comin skips the chown entirely.
-    grpc.unix_socket_group = "";
+    # macOS does not have, so the lookup fails and the whole gRPC server
+    # refuses to start ("failed to lookup group users: group: unknown group
+    # users"). `staff` is the group every regular macOS account belongs to, so
+    # the socket (mode 0770) stays reachable without sudo; an empty value skips
+    # the chown and leaves it in the daemon group, i.e. root-only.
+    grpc.unix_socket_group = "staff";
 
     remotes = [
       {
