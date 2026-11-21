@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=7.2.0.0
+Type=Application
+Name=Okta Verify
+Name[fr]=OktaVerify
+Name[fr_CA]=OktaVerify
+Comment=Okta Verify Authenticator
+Exec=/opt/okta/verify/oktaverify %U
+Icon=okta-verify
+Terminal=false
+Categories=Security;Utility;
+StartupNotify=true
+StartupWMClass=oktaverify
+SingleMainWindow=true

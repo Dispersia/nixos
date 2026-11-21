@@ -8,6 +8,11 @@
 
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.11";
 
+    # Anki 26.09.4 in current nixpkgs fails to build (uv cannot resolve
+    # hatchling/tomlkit offline). Pinned to the last rev that had 26.09.3;
+    # drop this input once nixpkgs fixes it.
+    nixpkgs-anki.url = "github:nixos/nixpkgs/3ec636362e1816bc2f0888fa0fa2c69f1bc9e504";
+
     nix-darwin = {
       url = "github:nix-darwin/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -40,14 +45,24 @@
     # OpenDesign — the local-first design workspace (`od` CLI + daemon + web UI).
     # Upstream retired its official Nix distribution in Aug 2026
     # (nexu-io/open-design#7644 removed the flake and Home Manager/NixOS
-    # modules), so pin the last commit that still ships them.
+    # modules). We track the Dispersia fork's `opencode2` branch, which keeps the
+    # flake + Home Manager module (based on the last upstream commit that shipped
+    # them) and adds an `opencode2` runtime definition so OpenCode 2 works as the
+    # local design agent.
     open-design = {
-      url = "github:nexu-io/open-design/db9ebb7ba84d81dffdd21de248cbcd992c791836";
+      url = "github:Dispersia/open-design/opencode2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     comin = {
       url = "github:nlewo/comin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Mediarium media manager (movies, TV, music, ebooks, audiobooks). Only
+    # home-server enables it; the flake ships its own NixOS module.
+    mediarium = {
+      url = "github:dispersia/Mediarium";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -65,22 +80,29 @@
       };
     };
 
-    # YomiFin sidecars. Both flakes live in subdirectories of the same checkout
+    # YomiFin sidecars. Both flakes live in subdirectories of the same repo
     # (`ocr/flake.nix` and `upscale/flake.nix`); they follow this flake's nixpkgs
-    # so python/uv/models come from a single closure.
-    #
-    # These are `path:` inputs so the Mac mini always evaluates the working
-    # checkout. Once the packaging is pushed, switch to
-    # `github:Dispersia/yomifin?dir=ocr` / `?dir=upscale` so comin no longer
-    # depends on a local checkout.
+    # so python/uv/models come from a single closure. The repo is private, so
+    # these use the SSH form and need a GitHub-authorized key on the host.
     yomifin-ocr = {
-      url = "path:/Users/dispe/development/yomifin?dir=ocr";
+      url = "git+ssh://git@github.com/Dispersia/yomifin?dir=ocr";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     yomifin-upscale = {
-      url = "path:/Users/dispe/development/yomifin?dir=upscale";
+      url = "git+ssh://git@github.com/Dispersia/yomifin?dir=upscale";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # tutor — AI language learning with local MLX speech. Hosted on this Mac as
+    # services.tutor (see hosts/Aarons-Mac-Mini), served at /tutor behind the
+    # tailnet gateway. `path:` so the Mac always evaluates the working checkout.
+    #
+    # Deliberately *not* following this flake's nixpkgs: tutor pins an FOD hash
+    # for its bun dependency tree, and a different bun would invalidate it. Using
+    # tutor's own nixpkgs keeps the package cached and reproducible.
+    tutor = {
+      url = "path:/Users/dispe/development/tutor";
     };
   };
 

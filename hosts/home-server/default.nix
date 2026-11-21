@@ -1,5 +1,6 @@
 {
   lib,
+  inputs,
   pkgs,
   hostName,
   username,
@@ -13,6 +14,9 @@
     ../../modules/nordvpn-netns.nix
     ../../modules/hashicorp-bin.nix
     ../../modules/comin.nix
+    ../../modules/kimaki.nix
+
+    inputs.mediarium.nixosModules.default
 
     ./cluster-containers.nix
     ./media.nix
@@ -40,6 +44,15 @@
     ];
   };
   networking.defaultGateway = "192.168.4.1";
+
+  # eno1 is pinned statically (see above), so DHCP no longer supplies a
+  # resolver. Without this, /etc/resolv.conf is left with no `nameserver` line
+  # and the host cannot resolve anything, which breaks comin's pull from
+  # GitHub and every other outbound HTTPS request.
+  networking.nameservers = [
+    "1.1.1.1"
+    "9.9.9.9"
+  ];
 
   nixpkgs.config.allowUnfreePredicate =
     pkg:
@@ -84,6 +97,16 @@
     extraSetFlags = [ "--advertise-routes=10.50.0.0/24,192.168.4.50/32" ];
   };
 
+  # Kimaki (the Discord bot for OpenCode 2) in gateway mode, same as wsl and
+  # the Mac Mini. It starts at boot and keeps running; the first start prints a
+  # one-time install URL that has to be authorized once in Discord. Read it
+  # with `journalctl -u kimaki -f`.
+  services.kimaki = {
+    enable = true;
+    user = username;
+    machineName = hostName;
+  };
+
   environment.systemPackages = with pkgs; [
     git
     vim
@@ -92,6 +115,11 @@
     openbao
     jq
     openssl
+
+    # OpenCode 2 CLI. The Kimaki service above pins the same package through
+    # its `opencodePackage` default; installing it here puts `opencode2` on
+    # PATH so sessions can also be started by hand over SSH.
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode2
   ];
 
   nix.settings.experimental-features = [

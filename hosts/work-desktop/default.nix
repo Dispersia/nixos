@@ -10,6 +10,7 @@
     ../../modules/system.nix
     ../../modules/comin.nix
     ../../modules/tailscale.nix
+    ../../modules/okta-verify
 
     ./hardware-configuration.nix
   ];

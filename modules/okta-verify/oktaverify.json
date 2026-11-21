@@ -1,0 +1,7 @@
+{
+  "configuration": {
+    "KeyCreationFlags": "2",
+    "UserVerificationType": "OktaVerifyPasscode",
+    "AuthenticatorOperationMode": "Normal"
+  }
+}

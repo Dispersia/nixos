@@ -11,6 +11,7 @@ let
   mediaDirs = [
     mediaRoot
     "${mediaRoot}/shows"
+    "${mediaRoot}/audiobooks"
     "${mediaRoot}/movies"
     "${mediaRoot}/manga"
     "${mediaRoot}/manhua"
@@ -19,6 +20,7 @@ let
   ];
   libraryDirs = [
     "${mediaRoot}/shows"
+    "${mediaRoot}/audiobooks"
     "${mediaRoot}/movies"
     "${mediaRoot}/manga"
   ];
@@ -83,49 +85,12 @@ in
     '';
   };
 
-  systemd.services.sonarr.serviceConfig.UMask = lib.mkForce "0002";
-  systemd.services.radarr.serviceConfig.UMask = lib.mkForce "0002";
-  systemd.services.bazarr.serviceConfig.UMask = "0002";
   systemd.services.qbittorrent.serviceConfig.UMask = "0002";
-
-  systemd.services.qbittorrent.serviceConfig.LoadCredential = [
-    "webui:/home/dispe/.secrets/qbittorrent-webui.conf"
-  ];
-
-  systemd.services.qbittorrent.preStart = lib.mkAfter ''
-    conf=/var/lib/qBittorrent/qBittorrent/config/qBittorrent.conf
-    ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$conf")"
-    if [ -n "''${CREDENTIALS_DIRECTORY:-}" ] && [ -f "$CREDENTIALS_DIRECTORY/webui" ] && ! ${pkgs.gnugrep}/bin/grep -qF 'WebUI\Password_PBKDF2' "$conf" 2>/dev/null; then
-      ${pkgs.coreutils}/bin/cat "$CREDENTIALS_DIRECTORY/webui" >> "$conf"
-    fi
-  '';
-  systemd.services.sabnzbd.serviceConfig.UMask = "0002";
-
-  services.sonarr = {
-    enable = true;
-    openFirewall = true;
-    group = "media";
-  };
-
-  services.radarr = {
-    enable = true;
-    openFirewall = true;
-    group = "media";
-  };
-
-  services.prowlarr = {
-    enable = true;
-    openFirewall = true;
-  };
 
   services.flaresolverr.enable = true;
 
-  services.bazarr = {
-    enable = true;
-    openFirewall = true;
-    group = "media";
-  };
-
+  # The WebUI password already lives in /var/lib/qBittorrent/qBittorrent.conf;
+  # the credential file that used to seed it is gone, so no LoadCredential here.
   services.qbittorrent = {
     enable = true;
     openFirewall = true;
@@ -133,22 +98,6 @@ in
     webuiPort = 8080;
     torrentingPort = 6881;
     extraArgs = [ "--confirm-legal-notice" ];
-  };
-
-  services.sabnzbd = {
-    enable = true;
-    openFirewall = true;
-    group = "media";
-    allowConfigWrite = true;
-    settings.misc = {
-      host = "0.0.0.0";
-      port = 8085;
-      inet_exposure = "api+web (locally no auth)";
-      download_dir = "/var/lib/sabnzbd/downloads";
-      complete_dir = "/mnt/media/downloads";
-      permissions = "775";
-      host_whitelist = "sabnzbd.${config.services.tailnetGateway.domain}";
-    };
   };
 
   # Podman stays enabled for development tooling; no media containers are
@@ -198,9 +147,22 @@ in
     '';
   };
 
-  services.seerr = {
+  # Mediarium is the only media manager now. It must use `media` as its
+  # primary group: Synology NFS only evaluates the primary group, so hardlinked
+  # imports from downloads stay readable by Jellyfin.
+  services.mediarium = {
     enable = true;
     openFirewall = true;
+    group = "media";
+
+    moviesDir = "${mediaRoot}/movies";
+    tvDir = "${mediaRoot}/shows";
+    downloadsDir = downloadsRoot;
+    # Mediarium calls this option `ebooksDir`; the NAS share is `books`.
+    ebooksDir = "${mediaRoot}/books";
+    audiobooksDir = "${mediaRoot}/audiobooks";
+
+    # musicDir keeps its default under /var/lib/mediarium/data.
   };
 
   services.tailnetGateway = {
@@ -224,29 +186,16 @@ in
     listenAddress = "0.0.0.0";
 
     routes = {
-      prowlarr = {
-        port = 9696;
-      };
-      sonarr = {
-        port = 8989;
-      };
-      radarr = {
-        port = 7878;
-      };
-      bazarr = {
-        port = 6767;
-      };
       jellyfin = {
         port = 8096;
       };
       qbittorrent = {
         port = 8080;
       };
-      sabnzbd = {
-        port = 8085;
-      };
-      seerr = {
-        port = 5055;
+      # Mediarium is the library/request front end, so it answers as
+      # request.home.arpa (port 8264).
+      request = {
+        port = 8264;
       };
       flaresolverr = {
         port = 8191;
@@ -269,20 +218,14 @@ in
     tokenFile = "/home/dispe/.secrets/nordvpn-token";
     country = "United States";
     services = [
-      "prowlarr"
-      "sonarr"
-      "radarr"
       "qbittorrent"
-      "sabnzbd"
       "flaresolverr"
+      "mediarium"
     ];
     ports = [
       8080
-      8085
       8191
-      8989
-      7878
-      9696
+      8264
     ];
   };
 
