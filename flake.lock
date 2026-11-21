@@ -412,11 +412,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795111629,
-        "narHash": "sha256-rVxX7o+xE0oBQ4p0bYg6+J8wiBOVTH16HwZFn6Bgu9Y=",
+        "lastModified": 1795279020,
+        "narHash": "sha256-i1NIuBSzJO9X4MYxgxascNwsABOPD9KclL6DUgg5zRI=",
         "owner": "dispersia",
         "repo": "Mediarium",
-        "rev": "f37768c95445fa17cc624cce2483e3c545e7a220",
+        "rev": "43208539a1b8d72d34cc106dd35f918a46beb3cb",
         "type": "github"
       },
       "original": {
