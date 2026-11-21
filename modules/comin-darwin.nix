@@ -31,6 +31,12 @@ in
 
     hostname = hostName;
 
+    # comin defaults the gRPC socket group to the Linux group `users`, which
+    # macOS does not have, so the lookup fails and the server never starts
+    # ("failed to lookup group users: group: unknown group users"). Empty means
+    # "leave the socket group alone" — comin skips the chown entirely.
+    grpc.unix_socket_group = "";
+
     remotes = [
       {
         name = "origin";
