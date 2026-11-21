@@ -47,14 +47,16 @@ in
   # Authenticate the provider first with `opencode auth login openrouter`
   # (or `/login` inside a Kimaki channel).
   #
-  # The `mcp.open-design` server is the stdio bridge that `od mcp install
-  # opencode` would normally write into this file; declaring it here keeps the
-  # wiring reproducible instead of depending on a manual install step.
+  # The `mcp.servers.open-design` entry is the stdio bridge that `od mcp
+  # install opencode` would normally write into this file; declaring it here
+  # keeps the wiring reproducible instead of depending on a manual install
+  # step. OpenCode 2 nests server definitions under `mcp.servers` — a bare
+  # `mcp.<name>` key is V1 syntax and OpenCode 2 ignores it silently.
   home.file.".config/opencode/opencode.json".text = builtins.toJSON {
     "$schema" = "https://opencode.ai/config.json";
     model = "openrouter/deepseek/deepseek-v4.1-flash";
 
-    mcp.open-design = {
+    mcp.servers.open-design = {
       type = "local";
       command = [
         (lib.getExe openDesign.package)
@@ -62,7 +64,6 @@ in
         "--daemon-url"
         "http://127.0.0.1:${toString openDesign.port}"
       ];
-      enabled = true;
       environment.OD_DATA_DIR = "${config.home.homeDirectory}/.od";
     };
   };
