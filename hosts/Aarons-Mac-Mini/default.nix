@@ -144,6 +144,9 @@ in
   services.tailnetGateway = {
     enable = true;
     hostname = "aarons-mac-mini.tail7c1ddb.ts.net";
+    # tutor runs from ~/development/tutor as the dev.tutor.serve user agent (that
+    # repo deploys itself); the gateway only exposes it at /tutor.
+    routes.tutor.port = 4318;
     # Forge is disabled above, so nothing listens on its port; the route is kept
     # here (commented) so it is one uncomment away from coming back.
     # routes.forge.port = config.services.forge-neo.port;
