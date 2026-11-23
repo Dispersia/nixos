@@ -965,8 +965,8 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1795270966,
-        "narHash": "sha256-5mG4qNBuSRHu7zCQZ2xXYA2WH8yjOTIdtiGKj9EZUTA=",
+        "lastModified": 1795459756,
+        "narHash": "sha256-1qr2tByKoytW0QawDaoD7uumOke4M+QyOTl+8fXZfzw=",
         "path": "/Users/dispe/development/tutor",
         "type": "path"
       },
