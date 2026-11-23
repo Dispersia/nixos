@@ -77,6 +77,12 @@
 
   environment.shells = [ pkgs.nushell ];
 
+  # git-lfs for the media/library repos; writes the filter config to /etc/gitconfig.
+  programs.git = {
+    enable = true;
+    lfs.enable = true;
+  };
+
   services.openssh = {
     enable = true;
 
