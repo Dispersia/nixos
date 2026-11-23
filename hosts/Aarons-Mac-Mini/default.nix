@@ -61,10 +61,6 @@ in
     # the vendored copies this host used to carry.
     inputs.yomifin-ocr.darwinModules.default
     inputs.yomifin-upscale.darwinModules.default
-
-    # tutor (AI language learning, local MLX speech) — flake lives in the tutor
-    # checkout; the module runs it as a launchd user agent on loopback.
-    inputs.tutor.darwinModules.default
   ];
 
   # Image generation WebUI. The first start installs torch and friends into
@@ -133,16 +129,6 @@ in
 
   services.tailscale.enable = true;
 
-  # tutor — AI-first language learning. The module runs the packaged app as a
-  # launchd user agent on 127.0.0.1:4318 (it needs your $HOME for the MLX venv
-  # and model weights) and exposes it at https://<hostname>/tutor via the
-  # tailnet gateway below. Secrets live outside the store.
-  services.tutor = {
-    enable = true;
-    environmentFile = "/Users/dispe/.config/tutor/env";
-    basePath = "/tutor";
-  };
-
   # Kimaki (the Discord bot for OpenCode 2) in gateway mode. It starts at
   # login and keeps running; the first start prints a one-time install URL in
   # ~/Library/Logs/kimaki.log that has to be authorized once in Discord.
@@ -161,7 +147,6 @@ in
     # Forge is disabled above, so nothing listens on its port; the route is kept
     # here (commented) so it is one uncomment away from coming back.
     # routes.forge.port = config.services.forge-neo.port;
-    routes.tutor.port = config.services.tutor.port;
   };
 
   # Reach the Mac itself over the tailnet (also serves as the SSH host for the
